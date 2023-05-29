@@ -25,10 +25,10 @@ class AbstractHeader(metaclass=ABCMeta):
         self.is_italic = is_italic
         self.__validate__()
 
-    def to_fp(self):
+    def to_fp(self) -> 'Header':
         raise NotImplementedError('to_fp() not implemented')
 
-    def from_fp(self):
+    def from_fp(self, header: 'Header'):
         raise NotImplementedError('from_fp() not implemented')
 
     @property
