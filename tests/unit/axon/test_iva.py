@@ -1,4 +1,4 @@
-from src.iva import Iva
+from src.Prod8A.iva import Iva
 
 
 def test_iva_aliquota():
@@ -37,37 +37,37 @@ def test_iva_aliquota():
 
 def test_iva_natura():
     iva = Iva(
-        iva_id=1,
+        iva_id=13,
         iva_type='natura',
         aliquota_value=None,
-        natura_code='N1'
+        natura_code=0
     )
 
     assert isinstance(iva, Iva)
 
     # Set a wrong natura code
     try:
-        iva.natura_code = 'N7'
+        iva.natura_code = 7
     except AttributeError:
         pass
     else:
         raise AssertionError('AssertionError not raised for natura code N7')
 
-    # Set a wrong natura code, not a string
+    # Set a wrong natura code, not an integer
     try:
-        iva.natura_code = 1
+        iva.natura_code = "N1"
     except AttributeError:
         pass
     else:
-        raise AssertionError('AssertionError not raised for natura code not string')
+        raise AssertionError('AssertionError not raised for natura code not integer')
 
 
 def test_iva_types():
     iva = Iva(
-        iva_id=1,
+        iva_id=13,
         iva_type='ventilazione',
         aliquota_value=None,
-        natura_code=None
+        natura_code=6
     )
     assert isinstance(iva, Iva)
 
@@ -78,3 +78,41 @@ def test_iva_types():
         pass
     else:
         raise AssertionError('AssertionError not raised for iva type a')
+
+
+def test_wrong_id_and_type_pairings():
+    try:
+        Iva(
+            iva_id=13,
+            iva_type='aliquota',
+            aliquota_value=22.0,
+            natura_code=None
+        )
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError('AssertionError not raised for wrong id and type pairings')
+
+    try:
+        Iva(
+            iva_id=1,
+            iva_type='natura',
+            aliquota_value=None,
+            natura_code=0
+        )
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError('AssertionError not raised for wrong id and type pairings')
+
+    try:
+        Iva(
+            iva_id=1,
+            iva_type='ventilazione',
+            aliquota_value=None,
+            natura_code=0
+        )
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError('AssertionError not raised for wrong id and type pairings')

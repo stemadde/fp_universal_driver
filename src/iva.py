@@ -12,19 +12,21 @@ class AbstractIva(metaclass=ABCMeta):
             iva_id: int,
             iva_type: Literal['natura', 'aliquota', 'ventilazione'],
             aliquota_value: Optional[float],
-            natura_code: Optional[Literal['N1', 'N2', 'N3', 'N4', 'N5', 'N6']]
+            natura_code: Optional[Literal['N1', 'N2', 'N3', 'N4', 'N5', 'N6']],
+            ateco_code=0,
     ):
         self.id = iva_id
         self.iva_type = iva_type
         # Check that iva type is valid
         self.natura_code = natura_code
         self.aliquota_value = aliquota_value
+        self.ateco_code = ateco_code
         self.__validate__()
 
-    def to_fp(self):
+    def to_fp(self) -> 'Iva':
         raise NotImplementedError('to_fp() not implemented')
 
-    def from_fp(self):
+    def from_fp(self, iva: 'Iva'):
         raise NotImplementedError('from_fp() not implemented')
 
     @property
