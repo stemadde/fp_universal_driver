@@ -1,7 +1,12 @@
 from typing import Optional
+import logging
+from .validator import validate
+from abc import ABCMeta
+
+logger = logging.getLogger(__name__)
 
 
-class Category:
+class AbstractCategory(metaclass=ABCMeta):
     def __init__(
             self,
             category_id: int,
@@ -11,7 +16,7 @@ class Category:
             min_price: Optional[float],
             iva_id: int,
     ):
-        self.category_id = category_id
+        self.id = category_id
         self.description = description
         self.default_price = default_price
         self.max_price = max_price
@@ -31,9 +36,24 @@ class Category:
         """
         raise NotImplementedError('max_description_length attribute not defined')
 
+    def __validate_max_description_length__(self):
+        if len(self.description) > self.max_description_length:
+            raise AttributeError(f'Description max length exceeded ({self.max_description_length})')
+
     def __validate__(self):
-        """
-        Performs validations such as checking that the description provided does not exceed the description max length
-        """
-        assert len(self.description) <= self.max_description_length, \
-            f'Description max length exceeded ({self.max_description_length})'
+        validate(self)
+        logger.debug(f'Validations for category {self} complete')
+
+    def __setattr__(self, key, value):
+        if key == 'description':
+            self.__validate_max_description_length__()
+        super().__setattr__(key, value)
+
+
+class Category(AbstractCategory):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @property
+    def max_description_length(self) -> int:
+        return 999

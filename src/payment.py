@@ -1,5 +1,9 @@
 from abc import ABCMeta
 from typing import Literal, Optional
+from .validator import validate
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class AbstractPayment(metaclass=ABCMeta):
@@ -37,12 +41,16 @@ class AbstractPayment(metaclass=ABCMeta):
         """
         raise NotImplementedError('max_description_length attribute not defined')
 
+    def __validate_max_description_length__(self):
+        assert len(self.description) <= self.max_description_length, \
+            f'Description max length exceeded ({self.max_description_length})'
+
     def __validate__(self):
         """
         Performs validations such as checking that the description provided does not exceed the description max length
         """
-        assert len(self.description) <= self.max_description_length, \
-            f'Description max length exceeded ({self.max_description_length})'
+        validate(self)
+        logger.debug(f'Validations for Payment {self} complete')
 
 
 class Payment(AbstractPayment):

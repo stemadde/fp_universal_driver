@@ -1,4 +1,5 @@
-import inspect
+from abc import ABCMeta
+from .validator import validate
 import logging
 from typing import List, Literal
 from .category import Category
@@ -10,7 +11,7 @@ from .header import Header
 logger = logging.getLogger(__name__)
 
 
-class FP:
+class AbstractFP(metaclass=ABCMeta):
     """
     Core class for the fp_universal_driver
     Every producer subclasses this FP class, providing functions to translate it's own tables
@@ -32,34 +33,55 @@ class FP:
         # Run class validations
         self.__validate__()
 
+    @property
+    def max_headers_length(self) -> int:
+        raise NotImplementedError('max_headers_length attribute not defined')
+
+    @property
+    def max_ivas_length(self) -> int:
+        raise NotImplementedError('max_ivas_length attribute not defined')
+
+    @property
+    def max_plus_length(self) -> int:
+        raise NotImplementedError('max_plus_length attribute not defined')
+
+    @property
+    def max_payments_length(self) -> int:
+        raise NotImplementedError('max_payments_length attribute not defined')
+
+    @property
+    def max_categories_length(self) -> int:
+        raise NotImplementedError('max_categories_length attribute not defined')
+
     def __validate_headers__(self):
-        assert len(self.headers) <= 99
+        if self.max_headers_length != 0:
+            assert len(self.headers) <= self.max_headers_length
 
     def __validate_ivas__(self):
-        assert len(self.ivas) <= 99
+        if self.max_ivas_length != 0:
+            assert len(self.ivas) <= self.max_ivas_length
 
     def __validate_plus__(self):
-        assert len(self.plus) <= 99999
+        if self.max_plus_length != 0:
+            assert len(self.plus) <= self.max_plus_length
+        # Check that all plus reference a valid category
+        category_ids = [category.id for category in self.categories]
+        assert all(plu.category_id in category_ids for plu in self.plus)
 
     def __validate_payments__(self):
-        assert len(self.payments) <= 99
+        if self.max_payments_length != 0:
+            assert len(self.payments) <= self.max_payments_length
 
     def __validate_categories__(self):
-        assert len(self.categories) <= 999
+        if self.max_categories_length != 0:
+            assert len(self.categories) <= self.max_categories_length
+        # Check that all categories reference a valid iva
+        iva_ids = [iva.id for iva in self.ivas]
+        assert all(category.iva_id in iva_ids for category in self.categories)
 
     def __validate__(self):
-        # Build a validators var that contains the validator functions for each attribute
-        validators = []
-        attributes = inspect.getmembers(self, lambda a: not (inspect.isroutine(a)))
-        for attr in [a for a in attributes if not (a[0].startswith('__') and a[0].endswith('__'))]:
-            validator_function_name = '__validate_' + attr[0] + '__'
-            assert hasattr(self, validator_function_name), f'Your class {self} does not have a {attr[0]} validator'
-            validators.append(getattr(self, validator_function_name))
-
-        # Run the validations
-        for validator in validators:
-            validator()
-        logger.debug('Validations complete')
+        validate(self)
+        logger.debug(f'Validations for fp {self} complete')
 
     def to_fp(self):
         raise NotImplementedError('to_fp() not implemented')
@@ -69,3 +91,32 @@ class FP:
 
     def connect(self, ip: str, port: int, protocol: Literal['tcp', 'udp']):
         raise NotImplementedError('connect() not implemented')
+
+
+class FP(AbstractFP):
+    """
+    This class is used to perform tests of the Abstract Parent.
+    No real use should be done from this class.
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @property
+    def max_headers_length(self) -> int:
+        return 0
+
+    @property
+    def max_ivas_length(self) -> int:
+        return 0
+
+    @property
+    def max_plus_length(self) -> int:
+        return 0
+
+    @property
+    def max_payments_length(self) -> int:
+        return 0
+
+    @property
+    def max_categories_length(self) -> int:
+        return 0

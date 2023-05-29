@@ -1,4 +1,8 @@
 from abc import ABCMeta
+import logging
+from .validator import validate
+
+logger = logging.getLogger(__name__)
 
 
 class AbstractHeader(metaclass=ABCMeta):
@@ -31,12 +35,16 @@ class AbstractHeader(metaclass=ABCMeta):
     def max_description_length(self) -> int:
         raise NotImplementedError('max_description_length attribute not defined')
 
+    def __validate_max_description_length(self):
+        assert len(self.description) <= self.max_description_length, \
+            f'Description max length exceeded ({self.max_description_length})'
+
     def __validate__(self):
         """
         Performs validations such as checking that the description provided does not exceed the description max length
         """
-        assert len(self.description) <= self.max_description_length, \
-            f'Description max length exceeded ({self.max_description_length})'
+        validate(self)
+        logger.debug(f'Validations for header {self} complete')
 
 
 class Header(AbstractHeader):
