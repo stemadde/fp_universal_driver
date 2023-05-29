@@ -12,9 +12,9 @@ class AbstractCategory(metaclass=ABCMeta):
             category_id: int,
             description: str,
             default_price: Optional[float],
-            max_price: Optional[float],
-            min_price: Optional[float],
             iva_id: int,
+            max_price=999999999.99,
+            min_price=0.0,
     ):
         self.id = category_id
         self.description = description
@@ -45,9 +45,9 @@ class AbstractCategory(metaclass=ABCMeta):
         logger.debug(f'Validations for category {self} complete')
 
     def __setattr__(self, key, value):
+        super().__setattr__(key, value)
         if key == 'description':
             self.__validate_max_description_length__()
-        super().__setattr__(key, value)
 
 
 class Category(AbstractCategory):

@@ -11,11 +11,11 @@ class AbstractPlu(metaclass=ABCMeta):
             plu_id: int,
             description: str,
             default_price: float,
-            max_price: float,
-            min_price: float,
             category_id: int,
             has_free_price_enabled=True,
             has_discount_enabled=True,
+            max_price=999999999.99,
+            min_price=0.0,
     ):
         self.id = plu_id
         self.description = description

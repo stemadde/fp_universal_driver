@@ -29,7 +29,52 @@ def test_iva_aliquota():
     # Set a wrong aliquota value < 0
     try:
         iva.aliquota_value = -1.0
-    except AssertionError:
+    except AttributeError:
         pass
     else:
         raise AssertionError('AssertionError not raised for aliquota value < 0')
+
+
+def test_iva_natura():
+    iva = Iva(
+        iva_id=1,
+        iva_type='natura',
+        aliquota_value=None,
+        natura_code='N1'
+    )
+
+    assert isinstance(iva, Iva)
+
+    # Set a wrong natura code
+    try:
+        iva.natura_code = 'N7'
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError('AssertionError not raised for natura code N7')
+
+    # Set a wrong natura code, not a string
+    try:
+        iva.natura_code = 1
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError('AssertionError not raised for natura code not string')
+
+
+def test_iva_types():
+    iva = Iva(
+        iva_id=1,
+        iva_type='ventilazione',
+        aliquota_value=None,
+        natura_code=None
+    )
+    assert isinstance(iva, Iva)
+
+    # Set a wrong iva type
+    try:
+        iva.iva_type = 'a'
+    except AttributeError:
+        pass
+    else:
+        raise AssertionError('AssertionError not raised for iva type a')

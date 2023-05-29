@@ -38,35 +38,34 @@ class AbstractIva(metaclass=ABCMeta):
     def __validate_iva_type__(self):
         if self.iva_type not in ('natura', 'aliquota', 'ventilazione'):
             raise AttributeError(f'Invalid iva type {self.iva_type}')
+
+    def __validate_aliquota__(self):
         if self.iva_type == 'aliquota':
-            self.__inner_validate_aliquota__()
-        elif self.iva_type == 'natura':
-            self.__inner_validate_natura__()
+            if not isinstance(self.aliquota_value, float):
+                raise AttributeError(f'Invalid aliquota value type {self.aliquota_value}')
+            if not self.min_aliquota_value < self.aliquota_value < self.max_aliquota_value:
+                raise AttributeError(f'Invalid aliquota value {self.aliquota_value}')
 
-    def __inner_validate_aliquota__(self):
-        if not isinstance(self.aliquota_value, float):
-            raise AttributeError(f'Invalid aliquota value type {self.aliquota_value}')
-        if not self.min_aliquota_value < self.aliquota_value < self.max_aliquota_value:
-            raise AttributeError(f'Invalid aliquota value {self.aliquota_value}')
-
-    def __inner_validate_natura__(self):
-        if not isinstance(self.natura_code, str):
-            raise AttributeError(f'Invalid natura code type {self.natura_code}')
-        if self.natura_code not in ['N1', 'N2', 'N3', 'N4', 'N5', 'N6']:
-            raise AttributeError(f'Invalid natura code {self.natura_code}')
+    def __validate_natura__(self):
+        if self.iva_type == 'natura':
+            if not isinstance(self.natura_code, str):
+                raise AttributeError(f'Invalid natura code type {self.natura_code}')
+            if self.natura_code not in ['N1', 'N2', 'N3', 'N4', 'N5', 'N6']:
+                raise AttributeError(f'Invalid natura code {self.natura_code}')
 
     def __validate__(self):
         validate(self)
         logger.debug(f'Validations for iva {self} complete')
 
     def __setattr__(self, key, value):
+        super().__setattr__(key, value)
+
         if key == 'iva_type':
             self.__validate_iva_type__()
         elif key == 'aliquota_value':
-            self.__inner_validate_aliquota__()
+            self.__validate_aliquota__()
         elif key == 'natura_code':
-            self.__inner_validate_natura__()
-        super().__setattr__(key, value)
+            self.__validate_natura__()
 
 
 class Iva(AbstractIva):
