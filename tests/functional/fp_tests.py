@@ -49,22 +49,24 @@ def create_instances() -> tuple:
     return iva, payment, header, category, plu
 
 
-def correct_fp_config(fp_class: Type[AbstractFP]):
+def correct_fp_config(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
     # Create Iva, Payment, Header, Category, Plus
     iva, payment, header, category, plu = create_instances()
 
     # Now instance FP - all the above objects are passed as arguments and are correct
-    fp = FP(
+    fp = fp_class(
+        ip=ip,
+        port=port,
         ivas=[iva],
         payments=[payment],
         headers=[header],
         categories=[category],
         plus=[plu],
     )
-    assert isinstance(fp, FP)
+    return fp
 
 
-def wrong_id_references(fp: Type[AbstractFP]):
+def wrong_id_references(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
     # Create Iva, Payment, Header, Category, Plus
     iva, payment, header, category, plu = create_instances()
 
@@ -72,7 +74,9 @@ def wrong_id_references(fp: Type[AbstractFP]):
     category.iva_id = 2
     # Now build a new FP with a wrong category
     try:
-        FP(
+        fp_class(
+            ip=ip,
+            port=port,
             ivas=[iva],
             payments=[payment],
             headers=[header],
@@ -89,7 +93,9 @@ def wrong_id_references(fp: Type[AbstractFP]):
     plu.category_id = 2
     # Now build a new FP with a wrong plu
     try:
-        FP(
+        fp_class(
+            ip=ip,
+            port=port,
             ivas=[iva],
             payments=[payment],
             headers=[header],

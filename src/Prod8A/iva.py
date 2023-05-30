@@ -1,12 +1,11 @@
-from typing import Optional, Literal
 from src.iva import AbstractIva, Iva as StdIva
 
 
 class Iva(AbstractIva):
     def __init__(
             self,
-            natura_code: Optional[Literal[0, 1, 2, 3, 4, 5, 6]],
             *args,
+            natura_code=0,
             **kwargs
     ):
         super().__init__(*args, **kwargs, natura_code=natura_code)

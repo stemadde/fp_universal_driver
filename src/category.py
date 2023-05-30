@@ -23,10 +23,10 @@ class AbstractCategory(metaclass=ABCMeta):
         self.min_price = min_price
         self.iva_id = iva_id
 
-    def to_fp(self):
+    def to_fp(self) -> 'Category':
         raise NotImplementedError('to_fp() not implemented')
 
-    def from_fp(self):
+    def from_fp(self, category: 'Category'):
         raise NotImplementedError('from_fp() not implemented')
 
     @property

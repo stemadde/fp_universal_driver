@@ -26,10 +26,10 @@ class AbstractPlu(metaclass=ABCMeta):
         self.has_free_price_enabled = has_free_price_enabled
         self.has_discount_enabled = has_discount_enabled
 
-    def to_fp(self):
+    def to_fp(self) -> 'Plu':
         raise NotImplementedError('to_fp() not implemented')
 
-    def from_fp(self):
+    def from_fp(self, plu: 'Plu'):
         raise NotImplementedError('from_fp() not implemented')
 
     @property

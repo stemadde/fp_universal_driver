@@ -28,10 +28,10 @@ class AbstractPayment(metaclass=ABCMeta):
         self.require_value = require_value
         self.__validate__()
 
-    def to_fp(self):
+    def to_fp(self) -> 'Payment':
         raise NotImplementedError('to_fp() not implemented')
 
-    def from_fp(self):
+    def from_fp(self, payment: 'Payment'):
         raise NotImplementedError('from_fp() not implemented')
 
     @property
