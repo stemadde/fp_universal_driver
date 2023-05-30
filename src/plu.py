@@ -1,6 +1,6 @@
 from abc import ABCMeta
 import logging
-from .validator import validate
+from .validator import validate, is_equal
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +47,9 @@ class AbstractPlu(metaclass=ABCMeta):
     def __validate__(self):
         validate(self)
         logger.debug(f'Validations for plu {self} complete')
+
+    def __eq__(self, other):
+        return is_equal(self, other)
 
 
 class Plu(AbstractPlu):

@@ -1,6 +1,6 @@
 from abc import ABCMeta
 import logging
-from .validator import validate
+from .validator import validate, is_equal
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +45,9 @@ class AbstractHeader(metaclass=ABCMeta):
         """
         validate(self)
         logger.debug(f'Validations for header {self} complete')
+
+    def __eq__(self, other):
+        return is_equal(self, other)
 
 
 class Header(AbstractHeader):

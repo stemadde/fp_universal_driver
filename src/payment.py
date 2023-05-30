@@ -1,6 +1,6 @@
 from abc import ABCMeta
 from typing import Literal, Optional
-from .validator import validate
+from .validator import validate, is_equal
 import logging
 
 logger = logging.getLogger(__name__)
@@ -51,6 +51,9 @@ class AbstractPayment(metaclass=ABCMeta):
         """
         validate(self)
         logger.debug(f'Validations for Payment {self} complete')
+
+    def __eq__(self, other):
+        return is_equal(self, other)
 
 
 class Payment(AbstractPayment):

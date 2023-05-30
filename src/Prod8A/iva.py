@@ -8,6 +8,13 @@ class Iva(AbstractIva):
             natura_code=0,
             **kwargs
     ):
+        if len(args) == 0:
+            if 'iva_id' not in kwargs:
+                kwargs['iva_id'] = 1
+            if 'iva_type' not in kwargs:
+                kwargs['iva_type'] = 'aliquota'
+            if 'aliquota_value' not in kwargs:
+                kwargs['aliquota_value'] = 22.0
         super().__init__(*args, **kwargs, natura_code=natura_code)
         if self.iva_type == 'ventilazione':
             self.natura_code = 6
@@ -21,18 +28,8 @@ class Iva(AbstractIva):
         return 100.0
 
     def __validate_id__(self):
-        if not 1 <= self.id <= 24:
+        if not 1 <= self.id <= 12:
             raise AttributeError(f'Invalid iva id {self.id}')
-
-    def __validate_id_and_type__(self):
-        if 1 <= self.id <= 12:
-            if self.iva_type != 'aliquota':
-                raise AttributeError(f'Iva type must be "aliquota" for ids between 1 and 12, ID: {self.id}')
-        elif 13 <= self.id <= 24:
-            if self.iva_type not in ['natura', 'ventilazione']:
-                raise AttributeError(
-                    f'Iva type must be "natura" or "ventilazione" for ids between 13 and 24, ID: {self.id}'
-                )
 
     def __validate_natura__(self):
         if self.iva_type == 'natura':
@@ -85,8 +82,8 @@ class Iva(AbstractIva):
         return
 
     def convert_to_cmd(self) -> bytes:
-        if 1 <= self.id <= 12:
+        if self.iva_type == 'aliquota':
             # Convert aliquota_value to bytes
             return bytes(int(self.aliquota_value * 100))
-        elif 13 <= self.id <= 24:
+        elif self.iva_type == 'natura':
             return bytes(self.natura_code)

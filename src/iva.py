@@ -1,7 +1,7 @@
 from abc import ABCMeta
 from typing import Literal, Optional
 import logging
-from .validator import validate
+from .validator import validate, is_equal
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +68,9 @@ class AbstractIva(metaclass=ABCMeta):
             self.__validate_aliquota__()
         elif key == 'natura_code':
             self.__validate_natura__()
+
+    def __eq__(self, other):
+        return is_equal(self, other)
 
 
 class Iva(AbstractIva):

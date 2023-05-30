@@ -16,3 +16,14 @@ def validate(class_instance: object) -> None:
     # Run the validations
     for validator in validators:
         validator()
+
+
+def is_equal(object1, object2) -> bool:
+    if not isinstance(object1, type(object2)):
+        return False
+    attributes = inspect.getmembers(object1, lambda a: not (inspect.isroutine(a)))
+    attributes = [a for a in attributes if not (a[0].startswith('__') and a[0].endswith('__'))]
+    for attribute in attributes:
+        if attribute[1] != getattr(object2, attribute[0]):
+            return False
+    return True

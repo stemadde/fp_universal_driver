@@ -1,7 +1,7 @@
 import socket
 import time
 from abc import ABCMeta
-from .validator import validate
+from .validator import validate, is_equal
 import logging
 from typing import List, Literal, Tuple
 from .category import Category
@@ -164,6 +164,9 @@ class AbstractFP(metaclass=ABCMeta):
 
     def check_response(self, response: bytes) -> Tuple[bool, str]:
         raise NotImplementedError('check_response() not implemented')
+
+    def __eq__(self, other):
+        return is_equal(self, other)
 
 
 class FP(AbstractFP):

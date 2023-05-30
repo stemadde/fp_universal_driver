@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, List
 from src.Prod8A.iva import Iva
 from src.Prod8A.payment import Payment
 from src.Prod8A.header import Header
@@ -8,7 +8,27 @@ from src.fp import AbstractFP, FP as StdFP
 
 
 class FP(AbstractFP):
-    def __init__(self, *args, serial='', **kwargs):
+    def __init__(
+            self, *args,
+            serial='',
+            **kwargs
+    ):
+        if len(args) == 0:
+            if 'ip' not in kwargs:
+                kwargs['ip'] = '0.0.0.0'
+            if 'port' not in kwargs:
+                kwargs['port'] = 9101
+        if 'ivas' not in kwargs:
+            kwargs['ivas'] = []
+        if 'payments' not in kwargs:
+            kwargs['payments'] = []
+        if 'headers' not in kwargs:
+            kwargs['headers'] = []
+        if 'categories' not in kwargs:
+            kwargs['categories'] = []
+        if 'plus' not in kwargs:
+            kwargs['plus'] = []
+
         super().__init__(*args, **kwargs)
         self.serial = serial  # Matricola
         self.sock = None
@@ -23,7 +43,7 @@ class FP(AbstractFP):
 
     @property
     def max_ivas_length(self) -> int:
-        return 24
+        return 12
 
     @property
     def max_plus_length(self) -> int:
@@ -44,7 +64,7 @@ class FP(AbstractFP):
         if is_successful:
             # Convert response bytes to ivas
             response = response.decode().split('/')[2:-1]  # Exclude printer status and checksum
-            for i in range(0, 12):
+            for i in range(0, self.max_ivas_length):
                 aliquota = float(response[i + 1])
                 natura = int(response[i + 1 + 12])
                 ateco = int(response[i + 1 + 24])

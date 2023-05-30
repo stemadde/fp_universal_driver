@@ -3,6 +3,12 @@ from src.header import AbstractHeader, Header as StdHeader
 
 class Header(AbstractHeader):
     def __init__(self, *args, **kwargs):
+        if len(args) == 0:
+            if 'header_id' not in kwargs:
+                kwargs['header_id'] = 1
+            if 'description' not in kwargs:
+                kwargs['description'] = 'SP'
+
         super().__init__(*args, **kwargs)
 
     @property

@@ -37,7 +37,7 @@ def test_iva_aliquota():
 
 def test_iva_natura():
     iva = Iva(
-        iva_id=13,
+        iva_id=6,
         iva_type='natura',
         aliquota_value=None,
         natura_code=0
@@ -64,7 +64,7 @@ def test_iva_natura():
 
 def test_iva_types():
     iva = Iva(
-        iva_id=13,
+        iva_id=12,
         iva_type='ventilazione',
         aliquota_value=None,
         natura_code=6
@@ -80,13 +80,13 @@ def test_iva_types():
         raise AssertionError('AssertionError not raised for iva type a')
 
 
-def test_wrong_id_and_type_pairings():
+def test_wrong_type_and_setting_pairings():
     try:
         Iva(
-            iva_id=13,
+            iva_id=1,
             iva_type='aliquota',
-            aliquota_value=22.0,
-            natura_code=None
+            aliquota_value=None,
+            natura_code=1
         )
     except AttributeError:
         pass
@@ -97,8 +97,8 @@ def test_wrong_id_and_type_pairings():
         Iva(
             iva_id=1,
             iva_type='natura',
-            aliquota_value=None,
-            natura_code=0
+            aliquota_value=22.00,
+            natura_code=None
         )
     except AttributeError:
         pass
@@ -110,7 +110,7 @@ def test_wrong_id_and_type_pairings():
             iva_id=1,
             iva_type='ventilazione',
             aliquota_value=None,
-            natura_code=0
+            natura_code=2
         )
     except AttributeError:
         pass

@@ -1,6 +1,6 @@
 from typing import Optional
 import logging
-from .validator import validate
+from .validator import validate, is_equal
 from abc import ABCMeta
 
 logger = logging.getLogger(__name__)
@@ -48,6 +48,9 @@ class AbstractCategory(metaclass=ABCMeta):
         super().__setattr__(key, value)
         if key == 'description':
             self.__validate_max_description_length__()
+
+    def __eq__(self, other):
+        return is_equal(self, other)
 
 
 class Category(AbstractCategory):
