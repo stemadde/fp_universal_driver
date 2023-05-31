@@ -11,14 +11,14 @@ class AbstractPayment(metaclass=ABCMeta):
             self,
             payment_id: int,
             description: str,
-            payment_type: Literal['riscosso', 'non_riscosso_b_s', 'non_riscosso_fatture', 'ticket'],
+            payment_type: Literal['riscosso', 'non_riscosso_b_s', 'non_riscosso_fatture', 'ticket', 'sconto_a_pagare'],
             payment_subtype: Optional[Literal['contanti', 'elettronico']],
             drawer_open=True,  # Apertura cassetto
             require_value=False,  # Importo obbligatorio
     ):
         self.id = payment_id
         self.description = description
-        assert payment_type in ['riscosso', 'non_riscosso_b_s', 'non_riscosso_fatture', 'ticket']
+        assert payment_type in ['riscosso', 'non_riscosso_b_s', 'non_riscosso_fatture', 'ticket', 'sconto_a_pagare']
         self.payment_type = payment_type
         if payment_type == 'riscosso':
             assert payment_subtype

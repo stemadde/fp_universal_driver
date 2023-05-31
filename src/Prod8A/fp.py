@@ -84,6 +84,20 @@ class FP(AbstractFP):
         else:
             raise Exception('Error while reading ivas from printer')
 
+    def read_payments_from_fp(self):
+        code = b'{/'
+        for i in range(0, self.max_payments_length - 1):
+            is_successful, response = self.send_cmd(code + bytes([i + 1]))
+            if is_successful:
+                # Convert response bytes to ivas
+                response = response.decode().split('/')[2:-1]  # Exclude printer status and checksum
+                self.payments.append(Payment(
+                    payment_id=i + 1,
+                    description=response[0],
+                    payment_type=response[4],
+
+                ))
+
     def check_response(self, response: bytes) -> Tuple[bool, str]:
         r = response.decode().split('/')[:2]
         if r[0] == '00' and r[1] == '00':
