@@ -1,12 +1,12 @@
 from typing import Optional
 import logging
-from .validator import validate, is_equal
+from .base_fp_object import AbstractFPObject
 from abc import ABCMeta
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractCategory(metaclass=ABCMeta):
+class AbstractCategory(AbstractFPObject, metaclass=ABCMeta):
     def __init__(
             self,
             category_id: int,
@@ -22,12 +22,7 @@ class AbstractCategory(metaclass=ABCMeta):
         self.max_price = max_price
         self.min_price = min_price
         self.iva_id = iva_id
-
-    def to_fp(self) -> 'Category':
-        raise NotImplementedError('to_fp() not implemented')
-
-    def from_fp(self, category: 'Category'):
-        raise NotImplementedError('from_fp() not implemented')
+        super().__init__()
 
     @property
     def max_description_length(self) -> int:
@@ -40,17 +35,10 @@ class AbstractCategory(metaclass=ABCMeta):
         if len(self.description) > self.max_description_length:
             raise AttributeError(f'Description max length exceeded ({self.max_description_length})')
 
-    def __validate__(self):
-        validate(self)
-        logger.debug(f'Validations for category {self} complete')
-
     def __setattr__(self, key, value):
         super().__setattr__(key, value)
         if key == 'description':
             self.__validate_max_description_length__()
-
-    def __eq__(self, other):
-        return is_equal(self, other)
 
 
 class Category(AbstractCategory):

@@ -1,7 +1,7 @@
 import socket
 import time
 from abc import ABCMeta
-from .validator import validate, is_equal
+from .base_fp_object import AbstractFPObject
 import logging
 from typing import List, Literal, Tuple
 from .category import Category
@@ -13,7 +13,7 @@ from .header import Header
 logger = logging.getLogger(__name__)
 
 
-class AbstractFP(metaclass=ABCMeta):
+class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
     """
     Core class for the fp_universal_driver
     Every producer subclasses this FP class, providing functions to translate it's own tables
@@ -33,7 +33,8 @@ class AbstractFP(metaclass=ABCMeta):
         self.ip = ip
         self.port = port
         self.protocol = protocol
-        assert self.protocol in ['tcp', 'udp'], 'Protocol must be either tcp or udp'
+        if self.protocol not in ['tcp', 'udp']:
+            raise AttributeError('Protocol must be either "tcp" or "udp"')
         self.categories = categories
         self.plus = plus
         self.ivas = ivas
@@ -43,7 +44,7 @@ class AbstractFP(metaclass=ABCMeta):
         self.MAX_TRIES = 3
         self.TRY_DELAY = 0.5
         # Run class validations
-        self.__validate__()
+        super().__init__()
 
     @property
     def max_headers_length(self) -> int:
@@ -114,10 +115,6 @@ class AbstractFP(metaclass=ABCMeta):
             if category.iva_id not in iva_ids:
                 raise AttributeError(f'Category {category} references a non existent iva: {category.iva_id}')
 
-    def __validate__(self):
-        validate(self)
-        logger.debug(f'Validations for fp {self} complete')
-
     def pull_ivas(self):
         raise NotImplementedError('pull_ivas() not implemented')
 
@@ -162,12 +159,6 @@ class AbstractFP(metaclass=ABCMeta):
         self.push_categories()
         self.push_plus()
 
-    def to_fp(self) -> 'FP':
-        raise NotImplementedError('to_fp() not implemented')
-
-    def from_fp(self, fp: 'FP'):
-        raise NotImplementedError('from_fp() not implemented')
-
     def socket_connect(self):
         if isinstance(self.sock, socket.socket):
             # Check if socket is open
@@ -208,9 +199,6 @@ class AbstractFP(metaclass=ABCMeta):
 
     def check_response(self, response: bytes) -> Tuple[bool, str]:
         raise NotImplementedError('check_response() not implemented')
-
-    def __eq__(self, other):
-        return is_equal(self, other)
 
 
 class FP(AbstractFP):

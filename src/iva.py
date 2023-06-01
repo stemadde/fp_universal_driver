@@ -1,12 +1,12 @@
 from abc import ABCMeta
 from typing import Literal, Optional
 import logging
-from .validator import validate, is_equal
+from .base_fp_object import AbstractFPObject
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractIva(metaclass=ABCMeta):
+class AbstractIva(AbstractFPObject, metaclass=ABCMeta):
     def __init__(
             self,
             iva_id: int,
@@ -21,13 +21,7 @@ class AbstractIva(metaclass=ABCMeta):
         self.natura_code = natura_code
         self.aliquota_value = aliquota_value
         self.ateco_code = ateco_code
-        self.__validate__()
-
-    def to_fp(self) -> 'Iva':
-        raise NotImplementedError('to_fp() not implemented')
-
-    def from_fp(self, iva: 'Iva'):
-        raise NotImplementedError('from_fp() not implemented')
+        super().__init__()
 
     @property
     def min_aliquota_value(self) -> float:
@@ -55,10 +49,6 @@ class AbstractIva(metaclass=ABCMeta):
             if self.natura_code not in ['N1', 'N2', 'N3', 'N4', 'N5', 'N6']:
                 raise AttributeError(f'Invalid natura code {self.natura_code}')
 
-    def __validate__(self):
-        validate(self)
-        logger.debug(f'Validations for iva {self} complete')
-
     def __setattr__(self, key, value):
         super().__setattr__(key, value)
 
@@ -68,9 +58,6 @@ class AbstractIva(metaclass=ABCMeta):
             self.__validate_aliquota__()
         elif key == 'natura_code':
             self.__validate_natura__()
-
-    def __eq__(self, other):
-        return is_equal(self, other)
 
 
 class Iva(AbstractIva):

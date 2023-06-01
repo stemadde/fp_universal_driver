@@ -1,11 +1,10 @@
 from abc import ABCMeta
 import logging
-from .validator import validate, is_equal
-
+from .base_fp_object import AbstractFPObject
 logger = logging.getLogger(__name__)
 
 
-class AbstractHeader(metaclass=ABCMeta):
+class AbstractHeader(AbstractFPObject, metaclass=ABCMeta):
     def __init__(
             self,
             header_id: int,
@@ -23,31 +22,15 @@ class AbstractHeader(metaclass=ABCMeta):
         self.is_double_width = is_double_width
         self.is_bold = is_bold
         self.is_italic = is_italic
-        self.__validate__()
-
-    def to_fp(self) -> 'Header':
-        raise NotImplementedError('to_fp() not implemented')
-
-    def from_fp(self, header: 'Header'):
-        raise NotImplementedError('from_fp() not implemented')
+        super().__init__()
 
     @property
     def max_description_length(self) -> int:
         raise NotImplementedError('max_description_length attribute not defined')
 
-    def __validate_max_description_length(self):
-        assert len(self.description) <= self.max_description_length, \
-            f'Description max length exceeded ({self.max_description_length})'
-
-    def __validate__(self):
-        """
-        Performs validations such as checking that the description provided does not exceed the description max length
-        """
-        validate(self)
-        logger.debug(f'Validations for header {self} complete')
-
-    def __eq__(self, other):
-        return is_equal(self, other)
+    def __validate_max_description_length__(self):
+        if len(self.description) > self.max_description_length:
+            raise AttributeError(f'Description max length exceeded ({self.max_description_length})')
 
 
 class Header(AbstractHeader):
