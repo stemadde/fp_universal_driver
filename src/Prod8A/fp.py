@@ -53,11 +53,11 @@ class FP(AbstractFP):
     def max_payments_length(self) -> int:
         return 99
 
-    def read_from_fp(self):
+    def pull(self):
         self.socket_connect()
-        self.read_ivas_from_fp()
+        super().pull()
 
-    def read_ivas_from_fp(self):
+    def pull_ivas(self):
         # Iva
         code = b'e/'
         is_successful, response = self.send_cmd(code)
@@ -84,7 +84,7 @@ class FP(AbstractFP):
         else:
             raise Exception('Error while reading ivas from printer')
 
-    def read_payments_from_fp(self):
+    def pull_payments(self):
         code = b'{/'
         for i in range(0, self.max_payments_length - 1):
             is_successful, response = self.send_cmd(code + bytes([i + 1]))
@@ -95,7 +95,6 @@ class FP(AbstractFP):
                     payment_id=i + 1,
                     description=response[0],
                     payment_type=response[4],
-
                 ))
 
     def check_response(self, response: bytes) -> Tuple[bool, str]:
@@ -105,8 +104,9 @@ class FP(AbstractFP):
         else:
             return False, f'{r[0]}/{r[1]}'
 
-    def write_to_fp(self):
-        pass
+    def push(self):
+        self.socket_connect()
+        super().push()
 
     def from_fp(self, std_fp: StdFP):
         for std_iva in std_fp.ivas:

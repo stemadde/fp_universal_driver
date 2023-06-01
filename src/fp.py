@@ -118,6 +118,50 @@ class AbstractFP(metaclass=ABCMeta):
         validate(self)
         logger.debug(f'Validations for fp {self} complete')
 
+    def pull_ivas(self):
+        raise NotImplementedError('pull_ivas() not implemented')
+
+    def pull_plus(self):
+        raise NotImplementedError('pull_plus() not implemented')
+
+    def pull_categories(self):
+        raise NotImplementedError('pull_categories() not implemented')
+
+    def pull_payments(self):
+        raise NotImplementedError('pull_payments() not implemented')
+
+    def pull_headers(self):
+        raise NotImplementedError('pull_headers() not implemented')
+
+    def pull(self):
+        self.pull_headers()
+        self.pull_ivas()
+        self.pull_payments()
+        self.pull_categories()
+        self.pull_plus()
+
+    def push_ivas(self):
+        raise NotImplementedError('push_ivas() not implemented')
+
+    def push_plus(self):
+        raise NotImplementedError('push_plus() not implemented')
+
+    def push_categories(self):
+        raise NotImplementedError('push_categories() not implemented')
+
+    def push_payments(self):
+        raise NotImplementedError('push_payments() not implemented')
+
+    def push_headers(self):
+        raise NotImplementedError('push_headers() not implemented')
+
+    def push(self):
+        self.push_headers()
+        self.push_ivas()
+        self.push_payments()
+        self.push_categories()
+        self.push_plus()
+
     def to_fp(self) -> 'FP':
         raise NotImplementedError('to_fp() not implemented')
 
