@@ -9,6 +9,7 @@ The driver exposes a limited list of functionalities:
 - Commands to read/write the categories table
 - Commands to read/write the plus table
 - Commands to read/write the headers table
+- Commands to read/write the pos devices table
 
 
 ## Installation (Not published yet)
@@ -42,14 +43,17 @@ Inside each sub package you need to define a file structure as it follows:
     │   │   ├── iva.py
     │   │   ├── payment.py
     │   │   ├── plu.py
+    │   │   └── pos.py
 
 Inside each one of the files a corresponding class need to be defined, inheriting from the base class defined in the `fp_universal_driver.src` package.
 
 Classed should implement their own logic as to what validations to perform, how to handle types, etc... Methods that begins with `def __validate` are automatically called upon instanciation.
 
-Finally, but most importantly, each subclass should define the methods `from_fp` and `to_fp`.
-- `from_fp` should handle the translation process given a base FP instance. It should be able to convert the base FP class into an instance of the caller class.
-- `to_fp` should handle the translation process given an instance of the caller class. It should be able to convert the caller class into an instance of the base FP class.
+Finally, but most importantly, each subclass should define the methods `from_fp()`, `to_fp()`, `push()` and `pull()`.
+- `from_fp()` should handle the translation process given a base FP instance. It should be able to convert the base FP class into an instance of the caller class.
+- `to_fp()` should handle the translation process given an instance of the caller class. It should be able to convert the caller class into an instance of the base FP class.
+- `push()` should handle the process of sending the data to the fiscal printer. It should be able to convert the caller class into some bytes that can be sent to the fiscal printer over a network socket.
+- `pull()` should handle the process of receiving the data from the fiscal printer. It should be able to convert the bytes received from the fiscal printer into an instance of the caller class.
 
 The end goal is that each driver should be able to comunicate bidirectionally with the base FP class.
 
