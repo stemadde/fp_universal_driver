@@ -8,6 +8,7 @@ from .category import Category
 from .iva import Iva
 from .plu import Plu
 from .payment import Payment
+from .pos import Pos
 from .header import Header
 
 logger = logging.getLogger(__name__)
@@ -28,6 +29,7 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
             ivas: List[Iva],
             payments: List[Payment],
             headers: List[Header],
+            poses: List['Pos'],
             protocol: Literal['tcp', 'udp'] = 'tcp',
     ):
         self.ip = ip
@@ -40,6 +42,7 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
         self.ivas = ivas
         self.payments = payments
         self.headers = headers
+        self.poses = poses
         self.sock = None
         self.MAX_TRIES = 3
         self.TRY_DELAY = 0.5
@@ -66,6 +69,10 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
     def max_categories_length(self) -> int:
         raise NotImplementedError('max_categories_length attribute not defined')
 
+    @property
+    def max_poses_length(self) -> int:
+        raise NotImplementedError('max_poses_length attribute not defined')
+
     def __validate_ip__(self):
         split_ip = self.ip.split('.')
         if len(split_ip) != 4:
@@ -90,6 +97,11 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
             if len(self.ivas) > self.max_ivas_length:
                 raise AttributeError(f'Ivas max length exceeded ({self.max_ivas_length})')
 
+    def __validate_poses__(self):
+        if self.max_poses_length != 0:
+            if len(self.poses) > self.max_poses_length:
+                raise AttributeError(f'Poses max length exceeded ({self.max_poses_length})')
+
     def __validate_plus__(self):
         if self.max_plus_length != 0:
             if len(self.plus) > self.max_plus_length:
@@ -104,6 +116,11 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
         if self.max_payments_length != 0:
             if len(self.payments) > self.max_payments_length:
                 raise AttributeError(f'Payments max length exceeded ({self.max_payments_length})')
+        # Check that all payments reference a valid pos
+        pos_ids = [pos.id for pos in self.poses]
+        for payment in self.payments:
+            if payment.pos_id != 0 and payment.pos_id not in pos_ids:
+                raise AttributeError(f'Payment {payment} references a non existent pos: {payment.pos_id}')
 
     def __validate_categories__(self):
         if self.max_categories_length != 0:
@@ -124,6 +141,9 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
     def pull_categories(self):
         raise NotImplementedError('pull_categories() not implemented')
 
+    def pull_poses(self):
+        raise NotImplementedError('pull_poses() not implemented')
+
     def pull_payments(self):
         raise NotImplementedError('pull_payments() not implemented')
 
@@ -133,6 +153,7 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
     def pull(self):
         self.pull_headers()
         self.pull_ivas()
+        self.pull_poses()
         self.pull_payments()
         self.pull_categories()
         self.pull_plus()
@@ -146,6 +167,9 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
     def push_categories(self):
         raise NotImplementedError('push_categories() not implemented')
 
+    def push_poses(self):
+        raise NotImplementedError('push_poses() not implemented')
+
     def push_payments(self):
         raise NotImplementedError('push_payments() not implemented')
 
@@ -155,6 +179,7 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
     def push(self):
         self.push_headers()
         self.push_ivas()
+        self.push_poses()
         self.push_payments()
         self.push_categories()
         self.push_plus()
@@ -242,4 +267,8 @@ class FP(AbstractFP):
 
     @property
     def max_categories_length(self) -> int:
+        return 0
+
+    @property
+    def max_poses_length(self) -> int:
         return 0
