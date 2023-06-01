@@ -5,6 +5,7 @@ from src.header import Header
 from src.category import Category
 from src.plu import Plu
 from src.fp import FP, AbstractFP
+from src.pos import Pos
 
 
 def create_instances() -> tuple:
@@ -20,9 +21,10 @@ def create_instances() -> tuple:
         payment_id=1,
         description='Bonifico',
         payment_type='riscosso',
-        payment_subtype='contanti',
+        payment_subtype='elettronico',
         drawer_open=False,
-        require_value=True
+        require_value=True,
+        pos_id=1,
     )
 
     header = Header(
@@ -46,12 +48,20 @@ def create_instances() -> tuple:
         default_price=1.0,
     )
 
-    return iva, payment, header, category, plu
+    pos = Pos(
+        pos_id=1,
+        description='Pos 1',
+        ip='192.168.1.2',
+        port=9100,
+        protocol='ingenico',
+    )
+
+    return iva, payment, header, category, plu, pos
 
 
 def correct_fp_config(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
     # Create Iva, Payment, Header, Category, Plus
-    iva, payment, header, category, plu = create_instances()
+    iva, payment, header, category, plu, pos = create_instances()
 
     # Now instance FP - all the above objects are passed as arguments and are correct
     fp = fp_class(
@@ -62,13 +72,14 @@ def correct_fp_config(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
         headers=[header],
         categories=[category],
         plus=[plu],
+        poses=[pos],
     )
     return fp
 
 
 def wrong_id_references(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
     # Create Iva, Payment, Header, Category, Plus
-    iva, payment, header, category, plu = create_instances()
+    iva, payment, header, category, plu, pos = create_instances()
 
     # Set a category to a wrong iva_id
     category.iva_id = 2
@@ -82,6 +93,7 @@ def wrong_id_references(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
             headers=[header],
             categories=[category],
             plus=[plu],
+            poses=[pos],
         )
     except AttributeError:
         # If error is raised correctly restore the correct iva_id
@@ -101,12 +113,42 @@ def wrong_id_references(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
             headers=[header],
             categories=[category],
             plus=[plu],
+            poses=[pos],
         )
     except AttributeError:
         # If error is raised correctly restore the correct category_id
         plu.category_id = 1
     else:
         raise AssertionError('AssertionError not raised for wrong category_id inside a plu config')
+
+    # Set a payment to a wrong pos_id
+    payment.pos_id = 2
+    # Now build a new FP with a wrong payment
+    try:
+        fp_class(
+            ip=ip,
+            port=port,
+            ivas=[iva],
+            payments=[payment],
+            headers=[header],
+            categories=[category],
+            plus=[plu],
+            poses=[pos],
+        )
+    except AttributeError:
+        # If error is raised correctly restore the correct pos_id
+        payment.pos_id = 1
+    else:
+        raise AssertionError('AssertionError not raised for wrong pos_id inside a payment config')
+
+    # Set a payment to a type-subtype combination and link to pos
+    try:
+        payment.payment_subtype = 'contanti'
+    except AttributeError:
+        # If error is raised correctly restore the correct payment_type
+        pass
+    else:
+        raise AssertionError('AssertionError not raised for wrong payment_type when using with pos')
 
 
 def test_std_fp():

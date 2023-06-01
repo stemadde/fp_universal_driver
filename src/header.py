@@ -37,5 +37,6 @@ class Header(AbstractHeader):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    @property
     def max_description_length(self) -> int:
         return 9999

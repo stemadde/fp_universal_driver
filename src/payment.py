@@ -53,6 +53,14 @@ class AbstractPayment(AbstractFPObject, metaclass=ABCMeta):
         if self.pos_id > 0 and (self.payment_type != 'riscosso' or self.payment_subtype != 'elettronico'):
             raise AttributeError(f'pos_id can only be set for payments of type "riscosso" with subtype "elettronico"')
 
+    def __setattr__(self, key, value):
+        super().__setattr__(key, value)
+        if key == 'description':
+            self.__validate_max_description_length__()
+        if key in ['pos_id', 'payment_type', 'payment_subtype']:
+            if hasattr(self, 'pos_id') and hasattr(self, 'payment_type') and hasattr(self, 'payment_subtype'):
+                self.__validate_pos_id__()
+
 
 class Payment(AbstractPayment):
     def __init__(self, *args, **kwargs):
