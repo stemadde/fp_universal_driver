@@ -5,6 +5,7 @@ from src.Prod8A.payment import Payment
 from src.Prod8A.header import Header
 from src.Prod8A.category import Category
 from src.Prod8A.plu import Plu
+from src.Prod8A.pos import Pos
 from src.fp import AbstractFP
 
 
@@ -47,12 +48,20 @@ def create_instances() -> tuple:
         default_price=1.0,
     )
 
-    return iva, payment, header, category, plu
+    pos = Pos(
+        pos_id=1,
+        description='Pos 1',
+        ip='192.168.1.2',
+        port=9100,
+        protocol='ingenico',
+    )
+
+    return iva, payment, header, category, plu, pos
 
 
 def correct_fp_config(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
     # Create Iva, Payment, Header, Category, Plus
-    iva, payment, header, category, plu = create_instances()
+    iva, payment, header, category, plu, pos = create_instances()
 
     # Now instance FP - all the above objects are passed as arguments and are correct
     fp = fp_class(
@@ -63,13 +72,14 @@ def correct_fp_config(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
         headers=[header],
         categories=[category],
         plus=[plu],
+        poses=[pos],
     )
     return fp
 
 
 def wrong_id_references(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
     # Create Iva, Payment, Header, Category, Plus
-    iva, payment, header, category, plu = create_instances()
+    iva, payment, header, category, plu, pos = create_instances()
 
     # Set a category to a wrong iva_id
     category.iva_id = 2
@@ -83,6 +93,7 @@ def wrong_id_references(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
             headers=[header],
             categories=[category],
             plus=[plu],
+            poses=[pos],
         )
     except AttributeError:
         # If error is raised correctly restore the correct iva_id
@@ -102,6 +113,7 @@ def wrong_id_references(fp_class: Type[AbstractFP], ip='0.0.0.0', port=9100):
             headers=[header],
             categories=[category],
             plus=[plu],
+            poses=[pos],
         )
     except AttributeError:
         # If error is raised correctly restore the correct category_id
@@ -115,7 +127,7 @@ def test_fp():
     assert isinstance(fp, FP)
     wrong_id_references(FP)
 
-    fp.read_from_fp()
+    fp.pull()
 
     # Test conversion from 8A FP to StdFP
     std_fp = fp.to_fp()

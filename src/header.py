@@ -1,10 +1,10 @@
 from abc import ABCMeta
 import logging
-from .base_fp_object import AbstractFPObject
+from .base_fp_object import AbstractFPTable
 logger = logging.getLogger(__name__)
 
 
-class AbstractHeader(AbstractFPObject, metaclass=ABCMeta):
+class AbstractHeader(AbstractFPTable, metaclass=ABCMeta):
     def __init__(
             self,
             header_id: int,

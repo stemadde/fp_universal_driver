@@ -1,11 +1,11 @@
 from abc import ABCMeta
 import logging
-from .base_fp_object import AbstractFPObject
+from .base_fp_object import AbstractFPTable
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractPlu(AbstractFPObject, metaclass=ABCMeta):
+class AbstractPlu(AbstractFPTable, metaclass=ABCMeta):
     def __init__(
             self,
             plu_id: int,

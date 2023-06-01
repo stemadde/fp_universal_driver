@@ -1,12 +1,12 @@
 from abc import ABCMeta
 from typing import Literal, Optional
 import logging
-from .base_fp_object import AbstractFPObject
+from .base_fp_object import AbstractFPTable
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractIva(AbstractFPObject, metaclass=ABCMeta):
+class AbstractIva(AbstractFPTable, metaclass=ABCMeta):
     def __init__(
             self,
             iva_id: int,

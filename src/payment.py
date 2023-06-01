@@ -1,12 +1,12 @@
 from abc import ABCMeta
 from typing import Literal, Optional
-from .base_fp_object import AbstractFPObject
+from .base_fp_object import AbstractFPTable
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractPayment(AbstractFPObject, metaclass=ABCMeta):
+class AbstractPayment(AbstractFPTable, metaclass=ABCMeta):
     def __init__(
             self,
             payment_id: int,

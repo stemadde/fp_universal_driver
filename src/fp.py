@@ -132,57 +132,21 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
             if category.iva_id not in iva_ids:
                 raise AttributeError(f'Category {category} references a non existent iva: {category.iva_id}')
 
-    def pull_ivas(self):
-        raise NotImplementedError('pull_ivas() not implemented')
-
-    def pull_plus(self):
-        raise NotImplementedError('pull_plus() not implemented')
-
-    def pull_categories(self):
-        raise NotImplementedError('pull_categories() not implemented')
-
-    def pull_poses(self):
-        raise NotImplementedError('pull_poses() not implemented')
-
-    def pull_payments(self):
-        raise NotImplementedError('pull_payments() not implemented')
-
-    def pull_headers(self):
-        raise NotImplementedError('pull_headers() not implemented')
-
     def pull(self):
-        self.pull_headers()
-        self.pull_ivas()
-        self.pull_poses()
-        self.pull_payments()
-        self.pull_categories()
-        self.pull_plus()
-
-    def push_ivas(self):
-        raise NotImplementedError('push_ivas() not implemented')
-
-    def push_plus(self):
-        raise NotImplementedError('push_plus() not implemented')
-
-    def push_categories(self):
-        raise NotImplementedError('push_categories() not implemented')
-
-    def push_poses(self):
-        raise NotImplementedError('push_poses() not implemented')
-
-    def push_payments(self):
-        raise NotImplementedError('push_payments() not implemented')
-
-    def push_headers(self):
-        raise NotImplementedError('push_headers() not implemented')
+        self.headers = Header.pull(self)
+        self.ivas = Iva.pull(self)
+        self.poses = Pos.pull(self)
+        self.payments = Payment.pull(self)
+        self.categories = Category.pull(self)
+        self.plus = Plu.pull(self)
 
     def push(self):
-        self.push_headers()
-        self.push_ivas()
-        self.push_poses()
-        self.push_payments()
-        self.push_categories()
-        self.push_plus()
+        Header.push(self, self.headers)
+        Iva.push(self, self.ivas)
+        Pos.push(self, self.poses)
+        Payment.push(self, self.payments)
+        Category.push(self, self.categories)
+        Plu.push(self, self.plus)
 
     def socket_connect(self):
         if isinstance(self.sock, socket.socket):

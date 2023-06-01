@@ -1,4 +1,9 @@
+from typing import List
+from typing import TYPE_CHECKING
 from src.iva import AbstractIva, Iva as StdIva
+
+if TYPE_CHECKING:
+    from src.Prod8A.fp import FP
 
 
 class Iva(AbstractIva):
@@ -87,3 +92,37 @@ class Iva(AbstractIva):
             return bytes(int(self.aliquota_value * 100))
         elif self.iva_type == 'natura':
             return bytes(self.natura_code)
+
+    @staticmethod
+    def push(fp: 'FP', objects: List['Iva']):
+        pass
+
+    @staticmethod
+    def pull(fp: 'FP') -> List['Iva']:
+        # Iva
+        code = b'e/'
+        return_list = []
+        is_successful, response = fp.send_cmd(code)
+        if is_successful:
+            # Convert response bytes to ivas
+            response = response.decode().split('/')[2:-1]  # Exclude printer status and checksum
+            for i in range(0, fp.max_ivas_length):
+                aliquota = float(response[i + 1])
+                natura = int(response[i + 1 + 12])
+                ateco = int(response[i + 1 + 24])
+                iva_type = 'aliquota'
+                if natura != 0:
+                    if natura != 6:
+                        iva_type = 'natura'
+                    else:
+                        iva_type = 'ventilazione'
+                return_list.append(Iva(
+                    iva_id=i + 1,
+                    iva_type=iva_type,
+                    aliquota_value=aliquota,
+                    natura_code=natura,
+                    ateco_code=ateco,
+                ))
+        else:
+            raise Exception('Error while reading ivas from printer')
+        return return_list

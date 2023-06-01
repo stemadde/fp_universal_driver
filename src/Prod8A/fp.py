@@ -28,6 +28,8 @@ class FP(AbstractFP):
             kwargs['categories'] = []
         if 'plus' not in kwargs:
             kwargs['plus'] = []
+        if 'poses' not in kwargs:
+            kwargs['poses'] = []
 
         super().__init__(*args, **kwargs)
         self.serial = serial  # Matricola
@@ -53,49 +55,13 @@ class FP(AbstractFP):
     def max_payments_length(self) -> int:
         return 99
 
+    @property
+    def max_poses_length(self) -> int:
+        return 99
+
     def pull(self):
         self.socket_connect()
         super().pull()
-
-    def pull_ivas(self):
-        # Iva
-        code = b'e/'
-        is_successful, response = self.send_cmd(code)
-        if is_successful:
-            # Convert response bytes to ivas
-            response = response.decode().split('/')[2:-1]  # Exclude printer status and checksum
-            for i in range(0, self.max_ivas_length):
-                aliquota = float(response[i + 1])
-                natura = int(response[i + 1 + 12])
-                ateco = int(response[i + 1 + 24])
-                iva_type = 'aliquota'
-                if natura != 0:
-                    if natura != 6:
-                        iva_type = 'natura'
-                    else:
-                        iva_type = 'ventilazione'
-                self.ivas.append(Iva(
-                    iva_id=i + 1,
-                    iva_type=iva_type,
-                    aliquota_value=aliquota,
-                    natura_code=natura,
-                    ateco_code=ateco,
-                ))
-        else:
-            raise Exception('Error while reading ivas from printer')
-
-    def pull_payments(self):
-        code = b'{/'
-        for i in range(0, self.max_payments_length - 1):
-            is_successful, response = self.send_cmd(code + bytes([i + 1]))
-            if is_successful:
-                # Convert response bytes to ivas
-                response = response.decode().split('/')[2:-1]  # Exclude printer status and checksum
-                self.payments.append(Payment(
-                    payment_id=i + 1,
-                    description=response[0],
-                    payment_type=response[4],
-                ))
 
     def check_response(self, response: bytes) -> Tuple[bool, str]:
         r = response.decode().split('/')[:2]

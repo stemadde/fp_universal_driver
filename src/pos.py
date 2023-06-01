@@ -1,12 +1,12 @@
 from abc import ABCMeta
-from typing import Literal, Optional
-from .base_fp_object import AbstractFPObject
+from typing import Literal, List
+from .base_fp_object import AbstractFPTable
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class AbstractPos(AbstractFPObject, metaclass=ABCMeta):
+class AbstractPos(AbstractFPTable, metaclass=ABCMeta):
     def __init__(
             self,
             pos_id: int,
@@ -29,6 +29,14 @@ class AbstractPos(AbstractFPObject, metaclass=ABCMeta):
     def __validate_max_description_length__(self):
         if len(self.description) > self.max_description_length:
             raise AttributeError(f'Description max length exceeded ({self.max_description_length})')
+
+    @staticmethod
+    def push(fp, objects: List['Pos']):
+        raise NotImplementedError('push() not implemented')
+
+    @staticmethod
+    def pull(fp) -> List['Pos']:
+        raise NotImplementedError('pull() not implemented')
 
 
 class Pos(AbstractPos):
