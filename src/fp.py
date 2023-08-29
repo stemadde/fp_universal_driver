@@ -172,8 +172,11 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
     def send_cmd(self, cmd: bytes) -> Tuple[bool, bytes]:
         try:
             self.socket_connect()
+            assert isinstance(self.sock, socket.socket)
             for i in range(self.MAX_TRIES):
                 self.sock.sendall(cmd)
+                self.sock.settimeout(180.0)
+                time.sleep(0.180)
                 # Get the response
                 response = self.sock.recv(1024)
                 has_succeeded, error = self.check_response(response)

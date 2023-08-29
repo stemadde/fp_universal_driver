@@ -1,23 +1,35 @@
 from abc import ABCMeta
-from typing import List
+from typing import List, Union
 
 
 class AbstractCommand(metaclass=ABCMeta):
-    def __init__(self, ip: str, port: int):
-        self.ip = ip
-        self.port = port
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
-    def send(self, bytes_list: List[bytes]) -> bytes:
-        raise NotImplementedError('send() not implemented')
+    def get_cmd_bytes(self) -> bytes:
+        raise NotImplementedError('get_cmd_bytes() not implemented')
+
+    def get_cmd_byte_list(self) -> List[bytes]:
+        raise NotImplementedError('get_cmd_byte_list() not implemented')
+
+    def get_cmd(self) -> Union[bytes, List[bytes]]:
+        if self.cmd_return_type == 'bytes':
+            return self.get_cmd_bytes()
+        elif self.cmd_return_type == 'list':
+            return self.get_cmd_byte_list()
+
+    @property
+    def cmd_return_type(self) -> str:
+        raise NotImplementedError('cmd_return_type() not implemented')
 
 
 class AbstractClosing(AbstractCommand, metaclass=ABCMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.run()
 
-    def run(self):
-        raise NotImplementedError('run() not implemented')
+    @property
+    def cmd_return_type(self):
+        return 'bytes'
 
 
 class AbstractReceipt(AbstractCommand, metaclass=ABCMeta):
@@ -43,7 +55,6 @@ class AbstractReceipt(AbstractCommand, metaclass=ABCMeta):
         self.product_list = product_list
         self.payment_list = payment_list
         self.perform_checks()
-        self.run()
 
     def perform_checks(self) -> None:
         """
@@ -65,5 +76,6 @@ class AbstractReceipt(AbstractCommand, metaclass=ABCMeta):
                 f'Payments: {payment_total}'
             )
 
-    def run(self):
-        raise NotImplementedError('run() not implemented')
+    @property
+    def cmd_return_type(self):
+        return 'list'

@@ -1,10 +1,19 @@
-from src.Prod96.command import Command, Receipt
+from src.Prod96.fp import FP
 
 
 def test_receipt():
-    receipt = Receipt(
+    fp = FP(
         ip='192.168.1.69',
         port=9100,
+        categories=[],
+        plus=[],
+        ivas=[],
+        payments=[],
+        headers=[],
+        poses=[],
+        protocol='tcp'
+    )
+    fp.send_receipt(
         product_list=[
             {
                 'quantity': 1000,
@@ -26,6 +35,5 @@ def test_receipt():
                 'payment_id': 3,  # Bonifico
                 'amount_paid': 500,
             }
-        ],
+        ]
     )
-    assert isinstance(receipt, Receipt)
