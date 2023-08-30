@@ -79,3 +79,53 @@ class AbstractReceipt(AbstractCommand, metaclass=ABCMeta):
     @property
     def cmd_return_type(self):
         return 'list'
+
+
+class AbstractVp(AbstractCommand, metaclass=ABCMeta):
+    def __init__(
+            self,
+            perform_first_closing=True,
+            send_receipt_1=True,
+            send_receipt_2=True,
+            delete_receipt_1=True,
+            delete_receipt_2=True,
+            perform_second_closing=True,
+            send_vp_event=True,
+            *args, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        # Steps:
+        # 1. Send Closure
+        # 2. Send Receipt 1
+        # 3. Send Receipt 2 with lottery code
+        # 4. Delete Receipt 1
+        # 5. Delete Receipt 2
+        # 6. Send Closure
+        # 7. Send VP event
+        self.perform_first_closing = perform_first_closing
+        self.send_receipt_1 = send_receipt_1
+        self.send_receipt_2 = send_receipt_2
+        self.delete_receipt_1 = delete_receipt_1
+        self.delete_receipt_2 = delete_receipt_2
+        self.perform_second_closing = perform_second_closing
+        self.send_vp_event = send_vp_event
+        if self.delete_receipt_1:
+            assert self.send_receipt_1, 'Cannot delete receipt 1 if it is not sent'
+        if self.delete_receipt_2:
+            assert self.send_receipt_2, 'Cannot delete receipt 2 if it is not sent'
+
+    def send_closing(self):
+        raise NotImplementedError('send_closing() not implemented')
+
+    def send_receipt(self, price: int, lottery_code: str, payment_id: int, description: str = ''):
+        raise NotImplementedError('send_receipt() not implemented')
+
+    def delete_receipt(self, receipt_closing_no: int, receipt_progressive_no: int, lottery_code: str):
+        raise NotImplementedError('delete_receipt() not implemented')
+
+    def send_vp(self):
+        raise NotImplementedError('send_vp() not implemented')
+
+    @property
+    def cmd_return_type(self) -> str:
+        return 'list'

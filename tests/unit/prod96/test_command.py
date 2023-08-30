@@ -1,10 +1,11 @@
+import os
 from src.Prod96.fp import FP
 
 
-def test_receipt():
+def get_fp_instance(ip: str, port: int):
     fp = FP(
-        ip='192.168.1.69',
-        port=9100,
+        ip=ip,
+        port=port,
         categories=[],
         plus=[],
         ivas=[],
@@ -13,6 +14,11 @@ def test_receipt():
         poses=[],
         protocol='tcp'
     )
+    return fp
+
+
+def test_receipt():
+    fp = get_fp_instance(os.getenv('FP_IP', '192.168.1.69'), int(os.getenv('FP_PORT', '9100')))
     fp.send_receipt(
         product_list=[
             {
@@ -37,3 +43,8 @@ def test_receipt():
             }
         ]
     )
+
+
+def test_vp():
+    pass
+

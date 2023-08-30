@@ -156,6 +156,6 @@ class FP(AbstractFP):
         return super().send_cmd(cmd)
 
     def send_receipt(self, product_list: List[dict], payment_list: List[dict]):
-        cmd_list = Receipt(product_list, payment_list).get_cmd_byte_list()
+        cmd_list = Receipt(product_list, payment_list).get_cmd()
         for cmd in cmd_list:
             self.send_cmd(cmd)

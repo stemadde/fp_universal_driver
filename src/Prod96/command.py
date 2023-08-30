@@ -1,5 +1,5 @@
 from typing import List
-from src.command import AbstractClosing, AbstractReceipt
+from src.command import AbstractClosing, AbstractReceipt, AbstractVp
 
 
 class Closing(AbstractClosing):
@@ -34,3 +34,58 @@ class Receipt(AbstractReceipt):
         command_list.append(bytes('301120', 'ascii'))  # Close receipt
         command_list.append(bytes('3013', 'ascii'))  # Cut
         return command_list
+
+
+class Vp(AbstractVp):
+
+    def get_cmd_byte_list(self) -> List[bytes]:
+        bytes_list = []
+        if self.perform_first_closing:
+            bytes_list.append(Closing().get_cmd())
+
+        # Start intervention
+        bytes_list.append(b'64040')
+
+        if self.send_receipt_1:
+            bytes_list.append(Receipt(
+                product_list=[{
+                    'rep_n': 1,
+                    'description': 'VP 1',
+                    'price': 123,
+                    'iva_id': 1,
+                }],
+                payment_list=[{
+                    'payment_id': 1,  # Contanti
+                    'amount_paid': 123,
+                }],
+            ).get_cmd())
+        if self.send_receipt_2:
+            bytes_list.append(Receipt(
+                product_list=[{
+                    'rep_n': 1,
+                    'description': 'VP 2',
+                    'price': 134,
+                    'iva_id': 1,
+                }],
+                payment_list=[{
+                    'payment_id': 3,  # Bonifico
+                    'amount_paid': 134,
+                }],
+            ).get_cmd())
+        if self.delete_receipt_1:
+            pass
+        if self.delete_receipt_2:
+            pass
+        if self.perform_second_closing:
+            bytes_list.append(Closing().get_cmd())
+        if self.send_vp_event:
+            cmd = '640413'
+            cf = 'MDDSFN98D02M102A'
+            cf = f'{len(cf)}{cf}'
+            piva = '11512940963'
+            piva = f'{len(piva)}{piva}'
+            description = 'VP OK'
+            description = f'{len(description)}{description}'
+            bytes_list.append(f'{cmd}{cf}{piva}{description}'.encode('ascii'))
+
+        return bytes_list
