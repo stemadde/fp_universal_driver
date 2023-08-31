@@ -1,6 +1,6 @@
 import datetime
 from typing import List, Tuple
-from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo
+from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo, AbstractIsReady
 
 
 class Info(AbstractInfo):
@@ -17,6 +17,19 @@ class Info(AbstractInfo):
         fp_datetime = response_list[2][4:]
         fp_datetime = datetime.datetime.strptime(fp_datetime, "%d%m%y%H%M%S")
         return serial, current_closing, current_receipt, fp_datetime
+
+
+class IsReady(AbstractIsReady):
+    def get_cmd_bytes(self) -> bytes:
+        return b'1513'
+
+    @staticmethod
+    def parse_response(response: str) -> bool:
+        return response.startswith('1513')
+
+    @staticmethod
+    def is_ready(response: str) -> bool:
+        return IsReady.parse_response(response)
 
 
 class Closing(AbstractClosing):
@@ -54,7 +67,6 @@ class Receipt(AbstractReceipt):
 
 
 class Vp(AbstractVp):
-
     def get_cmd_byte_list(self) -> List[bytes]:
         bytes_list = []
         if self.perform_first_closing:
@@ -64,44 +76,61 @@ class Vp(AbstractVp):
         bytes_list.append(b'64040')
 
         if self.send_receipt_1:
-            bytes_list.append(Receipt(
+            bytes_list += Receipt(
                 product_list=[{
                     'rep_n': 1,
                     'description': 'VP 1',
-                    'price': 123,
+                    'price': self.receipt_value_1,
                     'iva_id': 1,
                 }],
                 payment_list=[{
                     'payment_id': 1,  # Contanti
-                    'amount_paid': 123,
+                    'amount_paid': self.receipt_value_1,
                 }],
-            ).get_cmd())
+            ).get_cmd()
         # Enable lottery
-        bytes_list.append(f'3019{str(len(self.lottery_code)).zfill(2)}{self.lottery_code.upper()}')
+        bytes_list.append(f'3019{str(len(self.lottery_code)).zfill(2)}{self.lottery_code.upper()}'.encode('ascii'))
         if self.send_receipt_2:
-            bytes_list.append(Receipt(
+            bytes_list += Receipt(
                 product_list=[{
                     'rep_n': 1,
                     'description': 'VP 2',
-                    'price': 134,
+                    'price': self.receipt_value_2,
                     'iva_id': 1,
                 }],
                 payment_list=[{
                     'payment_id': 3,  # Bonifico
-                    'amount_paid': 134,
+                    'amount_paid': self.receipt_value_2,
                 }],
-            ).get_cmd())
+            ).get_cmd()
+
+        # Receipt deletion
         if self.delete_receipt_1:
-            doc_closing = '0001'
-            doc_no = '0001'
-            doc_date = '010101'
-            serial = '96AAA000000'
-            cmd = f'7101A{doc_closing}{doc_no}{doc_date}8{len(serial)}{serial}{len(self.lottery_code)}{self.lottery_code}'
-            pass
+            for code in self.rt_delete_codes:
+                cmd = (f'7101A'
+                       f'{str(self.current_closing + 1).zfill(4)}'
+                       f'0001'
+                       f'{self.fp_datetime.strftime("%d%m%y")}'
+                       f'{code}'
+                       f'{len(self.fp_serial)}{self.fp_serial}'
+                       f'{len(self.lottery_code)}{self.lottery_code}'
+                       )
+                bytes_list.append(cmd.encode('ascii'))
         if self.delete_receipt_2:
-            pass
+            for code in self.rt_delete_codes:
+                cmd = (f'7101A'
+                       f'{str(self.current_closing + 1).zfill(4)}'
+                       f'0002'
+                       f'{self.fp_datetime.strftime("%d%m%y")}'
+                       f'{code}'
+                       f'{len(self.fp_serial)}{self.fp_serial}'
+                       f'{len(self.lottery_code)}{self.lottery_code}'
+                       )
+                bytes_list.append(cmd.encode('ascii'))
+
         if self.perform_second_closing:
             bytes_list.append(Closing().get_cmd())
+
         if self.send_vp_event:
             cmd = '640413'
             cf = 'MDDSFN98D02M102A'

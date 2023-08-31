@@ -1,6 +1,7 @@
+import time
 from typing import Tuple, List
 from src.fp import AbstractFP, FP as StdFP
-from src.Prod96.command import Receipt, Info, Closing
+from src.Prod96.command import Receipt, Info, Closing, IsReady, Vp
 
 
 class FP(AbstractFP):
@@ -51,6 +52,7 @@ class FP(AbstractFP):
         self.serial = serial  # Matricola
         self.sock = None
         self.frame_cnt = self._FrameCounter()
+        self.request_fp_data()
 
     @property
     def max_categories_length(self) -> int:
@@ -154,9 +156,15 @@ class FP(AbstractFP):
         def set_cnt(self, new_value: int):
             self.frame_counter = new_value
 
+    def is_ready(self):
+        cmd = self.wrap_cmd(IsReady().get_cmd())
+        is_successful, response = super().send_cmd(cmd)
+        return IsReady.is_ready(self.unwrap_response(response))
+
     def send_cmd(self, cmd: bytes) -> Tuple[bool, bytes]:
         cmd = self.wrap_cmd(cmd)
-        return super().send_cmd(cmd)
+        is_successful, response = super().send_cmd(cmd)
+        return is_successful, response
 
     def send_receipt(self, product_list: List[dict], payment_list: List[dict]):
         cmd_list = Receipt(product_list, payment_list).get_cmd()
@@ -165,7 +173,12 @@ class FP(AbstractFP):
 
     def send_closing(self):
         cmd = Closing().get_cmd()
-        self.send_cmd(cmd)
+        is_successful, response = self.send_cmd(cmd)
+        if is_successful:
+            self.current_closing += 1
+            self.current_receipt = 1
+        while not self.is_ready():
+            time.sleep(1)
 
     def request_fp_data(self):
         cmd_list = Info().get_cmd()
@@ -175,7 +188,19 @@ class FP(AbstractFP):
             response_list.append(self.unwrap_response(response))
 
         self.serial, self.current_closing, self.current_receipt, self.fp_datetime = Info.parse_response(response_list)
-        print(self.serial)
-        print(self.current_closing)
-        print(self.current_receipt)
-        print(self.fp_datetime)
+
+    def send_vp(self):
+        cmd_list = Vp(
+            fp_serial=self.serial,
+            fp_datetime=self.fp_datetime,
+            current_closing=self.current_closing,
+            lottery_code='UF7KDL1T',
+            receipt_value_1=112,
+            receipt_value_2=134,
+            perform_first_closing=False,
+        ).get_cmd()
+        for cmd in cmd_list:
+            is_successful, response = self.send_cmd(cmd)
+            print(self.unwrap_response(response))
+            while not self.is_ready():
+                time.sleep(1)

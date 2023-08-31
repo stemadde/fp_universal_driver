@@ -1,4 +1,6 @@
 import os
+
+from src.Prod96.command import Vp
 from src.Prod96.fp import FP
 
 
@@ -51,8 +53,23 @@ def test_receipt():
 
 
 def test_vp():
-    pass
+    fp = get_fp_instance(os.getenv('FP_IP', '192.168.1.69'), int(os.getenv('FP_PORT', '9100')))
+    fp.send_vp()
 
+
+def test_vp_last_step():
+    fp = get_fp_instance(os.getenv('FP_IP', '192.168.1.69'), int(os.getenv('FP_PORT', '9100')))
+    cmd_list = Vp(
+        fp_serial=fp.serial,
+        fp_datetime=fp.fp_datetime,
+        current_closing=fp.current_closing,
+        lottery_code='UF7KDL1T',
+        receipt_value_1=112,
+        receipt_value_2=134,
+        perform_first_closing=False,
+    ).get_cmd()
+    print(cmd_list[-1])
+    fp.send_cmd(cmd_list[-1])
 
 def test_info():
     fp = get_fp_instance(os.getenv('FP_IP', '192.168.1.69'), int(os.getenv('FP_PORT', '9100')))

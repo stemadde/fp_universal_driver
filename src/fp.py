@@ -183,7 +183,7 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
             assert isinstance(self.sock, socket.socket)
             for i in range(self.MAX_TRIES):
                 self.sock.sendall(cmd)
-                self.sock.settimeout(180.0)
+                self.sock.settimeout(30.0)
                 time.sleep(0.180)
                 # Get the response
                 response = self.sock.recv(1024)
@@ -193,7 +193,11 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
                 else:
                     logger.warning(f"Error while sending command to printer: {error}")
                     time.sleep(self.TRY_DELAY)  # Wait half a second to allow printer buffer to empy
+            return False, 'Numero massimo di tentativi raggiunto'.encode()
         except socket.timeout as e:
+            logger.error(str(e))
+            return False, str(e).encode()
+        except BaseException as e:
             logger.error(str(e))
             return False, str(e).encode()
 

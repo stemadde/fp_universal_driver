@@ -1,3 +1,4 @@
+import datetime
 from abc import ABCMeta
 from typing import List, Union
 
@@ -30,6 +31,12 @@ class AbstractInfo(AbstractCommand, metaclass=ABCMeta):
     @property
     def cmd_return_type(self):
         return 'list'
+
+
+class AbstractIsReady(AbstractCommand, metaclass=ABCMeta):
+    @property
+    def cmd_return_type(self):
+        return 'bytes'
 
 
 class AbstractClosing(AbstractCommand, metaclass=ABCMeta):
@@ -71,7 +78,7 @@ class AbstractReceipt(AbstractCommand, metaclass=ABCMeta):
         """
         total = 0
         for product in self.product_list:
-            total += product['price'] * product['quantity']
+            total += product['price'] * product.get('quantity', 1000)
         total = round(total / 100000)
 
         payment_total = 0
@@ -93,6 +100,9 @@ class AbstractReceipt(AbstractCommand, metaclass=ABCMeta):
 class AbstractVp(AbstractCommand, metaclass=ABCMeta):
     def __init__(
             self,
+            fp_serial: str,
+            fp_datetime: datetime.datetime,
+            current_closing: int,
             perform_first_closing=True,
             send_receipt_1=True,
             send_receipt_2=True,
@@ -101,6 +111,8 @@ class AbstractVp(AbstractCommand, metaclass=ABCMeta):
             perform_second_closing=True,
             send_vp_event=True,
             lottery_code='',
+            receipt_value_1=112,
+            receipt_value_2=134,
             *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -112,6 +124,8 @@ class AbstractVp(AbstractCommand, metaclass=ABCMeta):
         # 5. Delete Receipt 2
         # 6. Send Closure
         # 7. Send VP event
+        self.fp_serial = fp_serial
+        self.fp_datetime = fp_datetime
         self.perform_first_closing = perform_first_closing
         self.send_receipt_1 = send_receipt_1
         self.send_receipt_2 = send_receipt_2
@@ -120,6 +134,11 @@ class AbstractVp(AbstractCommand, metaclass=ABCMeta):
         self.perform_second_closing = perform_second_closing
         self.send_vp_event = send_vp_event
         self.lottery_code = lottery_code
+        self.receipt_value_1 = receipt_value_1
+        self.receipt_value_2 = receipt_value_2
+        self.current_closing = current_closing
+        self.rt_delete_codes = ['8', '1']
+
         if self.delete_receipt_1:
             assert self.send_receipt_1, 'Cannot delete receipt 1 if it is not sent'
         if self.delete_receipt_2:
