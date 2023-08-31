@@ -1,6 +1,6 @@
 from typing import Tuple, List
 from src.fp import AbstractFP, FP as StdFP
-from src.Prod96.command import Receipt
+from src.Prod96.command import Receipt, Info, Closing
 
 
 class FP(AbstractFP):
@@ -20,6 +20,9 @@ class FP(AbstractFP):
         cmd_out = self.STX + cmd_out + self.get_cks(cmd_out) + self.ETX
         self.frame_cnt.tick_cnt()
         return cmd_out
+
+    def unwrap_response(self, response: bytes) -> str:
+        return response.decode('ascii')[5:-1]
 
     def __init__(
             self, *args,
@@ -158,4 +161,21 @@ class FP(AbstractFP):
     def send_receipt(self, product_list: List[dict], payment_list: List[dict]):
         cmd_list = Receipt(product_list, payment_list).get_cmd()
         for cmd in cmd_list:
-            self.send_cmd(cmd)
+            is_successful, response = self.send_cmd(cmd)
+
+    def send_closing(self):
+        cmd = Closing().get_cmd()
+        self.send_cmd(cmd)
+
+    def request_fp_data(self):
+        cmd_list = Info().get_cmd()
+        response_list = []
+        for cmd in cmd_list:
+            is_successful, response = self.send_cmd(cmd)
+            response_list.append(self.unwrap_response(response))
+
+        self.serial, self.current_closing, self.current_receipt, self.fp_datetime = Info.parse_response(response_list)
+        print(self.serial)
+        print(self.current_closing)
+        print(self.current_receipt)
+        print(self.fp_datetime)

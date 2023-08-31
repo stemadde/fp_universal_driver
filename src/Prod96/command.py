@@ -1,5 +1,22 @@
-from typing import List
-from src.command import AbstractClosing, AbstractReceipt, AbstractVp
+import datetime
+from typing import List, Tuple
+from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo
+
+
+class Info(AbstractInfo):
+    def get_cmd_byte_list(self) -> List[bytes]:
+        bytes_list = [b'1008', b'1104', b'1001']  # Serial, closing and receipt no, datetime
+        return bytes_list
+
+    @staticmethod
+    def parse_response(response_list: List[str]) -> Tuple[str, int, int, datetime.datetime]:
+        serial = response_list[0][4:]
+        tmp = response_list[1]
+        current_closing = int(tmp[4:8])
+        current_receipt = int(tmp[8:12])
+        fp_datetime = response_list[2][4:]
+        fp_datetime = datetime.datetime.strptime(fp_datetime, "%d%m%y%H%M%S")
+        return serial, current_closing, current_receipt, fp_datetime
 
 
 class Closing(AbstractClosing):
@@ -59,6 +76,8 @@ class Vp(AbstractVp):
                     'amount_paid': 123,
                 }],
             ).get_cmd())
+        # Enable lottery
+        bytes_list.append(f'3019{str(len(self.lottery_code)).zfill(2)}{self.lottery_code.upper()}')
         if self.send_receipt_2:
             bytes_list.append(Receipt(
                 product_list=[{
@@ -73,6 +92,11 @@ class Vp(AbstractVp):
                 }],
             ).get_cmd())
         if self.delete_receipt_1:
+            doc_closing = '0001'
+            doc_no = '0001'
+            doc_date = '010101'
+            serial = '96AAA000000'
+            cmd = f'7101A{doc_closing}{doc_no}{doc_date}8{len(serial)}{serial}{len(self.lottery_code)}{self.lottery_code}'
             pass
         if self.delete_receipt_2:
             pass

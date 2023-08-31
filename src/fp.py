@@ -31,6 +31,10 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
             headers: List[Header],
             poses: List['Pos'],
             protocol: Literal['tcp', 'udp'] = 'tcp',
+            current_closing=1,
+            current_receipt=1,
+            fp_datetime=None,
+            serial=''
     ):
         self.ip = ip
         self.port = port
@@ -46,6 +50,10 @@ class AbstractFP(AbstractFPObject, metaclass=ABCMeta):
         self.sock = None
         self.MAX_TRIES = 3
         self.TRY_DELAY = 0.5
+        self.current_closing = current_closing
+        self.current_receipt = current_receipt
+        self.fp_datetime = fp_datetime
+        self.serial = serial
         # Run class validations
         super().__init__()
 

@@ -23,6 +23,15 @@ class AbstractCommand(metaclass=ABCMeta):
         raise NotImplementedError('cmd_return_type() not implemented')
 
 
+class AbstractInfo(AbstractCommand, metaclass=ABCMeta):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    @property
+    def cmd_return_type(self):
+        return 'list'
+
+
 class AbstractClosing(AbstractCommand, metaclass=ABCMeta):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -91,6 +100,7 @@ class AbstractVp(AbstractCommand, metaclass=ABCMeta):
             delete_receipt_2=True,
             perform_second_closing=True,
             send_vp_event=True,
+            lottery_code='',
             *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -109,6 +119,7 @@ class AbstractVp(AbstractCommand, metaclass=ABCMeta):
         self.delete_receipt_2 = delete_receipt_2
         self.perform_second_closing = perform_second_closing
         self.send_vp_event = send_vp_event
+        self.lottery_code = lottery_code
         if self.delete_receipt_1:
             assert self.send_receipt_1, 'Cannot delete receipt 1 if it is not sent'
         if self.delete_receipt_2:

@@ -17,6 +17,11 @@ def get_fp_instance(ip: str, port: int):
     return fp
 
 
+def test_closing():
+    fp = get_fp_instance(os.getenv('FP_IP', '192.168.1.69'), int(os.getenv('FP_PORT', '9100')))
+    fp.send_closing()
+
+
 def test_receipt():
     fp = get_fp_instance(os.getenv('FP_IP', '192.168.1.69'), int(os.getenv('FP_PORT', '9100')))
     fp.send_receipt(
@@ -48,3 +53,7 @@ def test_receipt():
 def test_vp():
     pass
 
+
+def test_info():
+    fp = get_fp_instance(os.getenv('FP_IP', '192.168.1.69'), int(os.getenv('FP_PORT', '9100')))
+    fp.request_fp_data()
