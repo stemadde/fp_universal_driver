@@ -50,6 +50,7 @@ class FP(AbstractFP):
 
         super().__init__(*args, **kwargs)
         self.serial = serial  # Matricola
+        self.response_serial = ''
         self.sock = None
         self.frame_cnt = self._FrameCounter()
         self.request_fp_data()
@@ -156,15 +157,29 @@ class FP(AbstractFP):
         def set_cnt(self, new_value: int):
             self.frame_counter = new_value
 
-    def is_ready(self):
-        cmd = self.wrap_cmd(IsReady().get_cmd())
-        is_successful, response = super().send_cmd(cmd)
-        return IsReady.is_ready(self.unwrap_response(response))
+    def is_ready(self) -> bool:
+        cmd_list = IsReady().get_cmd()
+        for cmd in cmd_list:
+            is_successful, response = super().send_cmd(self.wrap_cmd(cmd))
+            if not IsReady.is_ready(self.unwrap_response(response)):
+                return False
+        return True
 
     def send_cmd(self, cmd: bytes) -> Tuple[bool, bytes]:
         cmd = self.wrap_cmd(cmd)
         is_successful, response = super().send_cmd(cmd)
         return is_successful, response
+
+    def send_cmd_list(self, cmd_list: List[bytes]):
+        error = False
+        error_description = ''
+        for cmd in cmd_list:
+            is_successful, response = self.send_cmd(cmd)
+            if not is_successful:
+                error = True
+                error_description = response
+        return error, error_description
+
 
     def send_receipt(self, product_list: List[dict], payment_list: List[dict]):
         cmd_list = Receipt(product_list, payment_list).get_cmd()
@@ -185,13 +200,17 @@ class FP(AbstractFP):
         response_list = []
         for cmd in cmd_list:
             is_successful, response = self.send_cmd(cmd)
-            response_list.append(self.unwrap_response(response))
+            response = self.unwrap_response(response)
+            print(response)
+            response_list.append(response)
 
-        self.serial, self.current_closing, self.current_receipt, self.fp_datetime = Info.parse_response(response_list)
+        self.response_serial, self.current_closing, self.current_receipt, self.fp_datetime = Info.parse_response(
+            response_list
+        )
 
     def send_vp(self):
         cmd_list = Vp(
-            fp_serial=self.serial,
+            fp_serial=self.response_serial,
             fp_datetime=self.fp_datetime,
             current_closing=self.current_closing,
             lottery_code='UF7KDL1T',
@@ -199,8 +218,19 @@ class FP(AbstractFP):
             receipt_value_2=134,
             perform_first_closing=False,
         ).get_cmd()
+        # 0 = Start event
+        # 1 = Receipt 1
+        # 2 = Receipt 2
+        # 3 = Delete Receipt 1
+        # 4 = Delete Receipt 2
+        # 5 = Closing
+        # 6 = End event
         for cmd in cmd_list:
-            is_successful, response = self.send_cmd(cmd)
-            print(self.unwrap_response(response))
-            while not self.is_ready():
-                time.sleep(1)
+            if isinstance(cmd, bytes):
+                is_successful, response = self.send_cmd(cmd)
+                print(self.unwrap_response(response))
+                while not self.is_ready():
+                    time.sleep(1)
+            elif isinstance(cmd, list):
+                self.send_cmd_list(cmd)
+

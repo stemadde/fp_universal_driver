@@ -36,7 +36,7 @@ class AbstractInfo(AbstractCommand, metaclass=ABCMeta):
 class AbstractIsReady(AbstractCommand, metaclass=ABCMeta):
     @property
     def cmd_return_type(self):
-        return 'bytes'
+        return 'list'
 
 
 class AbstractClosing(AbstractCommand, metaclass=ABCMeta):
