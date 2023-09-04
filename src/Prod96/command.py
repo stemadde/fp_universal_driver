@@ -144,7 +144,7 @@ class Vp(AbstractVp):
             piva = '11512940963'
             piva = f'{len(piva)}{piva}'
             description = 'VP OK'
-            description = f'{len(description)}{description}'
+            description = f'{str(len(description)).zfill(2)}{description}'
             bytes_list.append(f'{cmd}{cf}{piva}{description}'.encode('ascii'))
 
         return bytes_list

@@ -201,7 +201,6 @@ class FP(AbstractFP):
         for cmd in cmd_list:
             is_successful, response = self.send_cmd(cmd)
             response = self.unwrap_response(response)
-            print(response)
             response_list.append(response)
 
         self.response_serial, self.current_closing, self.current_receipt, self.fp_datetime = Info.parse_response(
@@ -225,10 +224,10 @@ class FP(AbstractFP):
         # 4 = Delete Receipt 2
         # 5 = Closing
         # 6 = End event
+        is_successful, response = self.send_cmd(cmd_list[9])
         for cmd in cmd_list:
             if isinstance(cmd, bytes):
                 is_successful, response = self.send_cmd(cmd)
-                print(self.unwrap_response(response))
                 while not self.is_ready():
                     time.sleep(1)
             elif isinstance(cmd, list):
