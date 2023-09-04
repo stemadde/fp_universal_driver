@@ -232,4 +232,3 @@ class FP(AbstractFP):
                     time.sleep(1)
             elif isinstance(cmd, list):
                 self.send_cmd_list(cmd)
-
