@@ -15,8 +15,8 @@ class Info(AbstractInfo):
         current_closing = int(current_closing[4:8])
         current_receipt = response_list[2]
         current_receipt = int(current_receipt[14:18])
-        fp_datetime = response_list[3][4:]
-        fp_datetime = datetime.datetime.strptime(fp_datetime, "%d%m%y%H%M%S")
+        fp_datetime = response_list[3][4:4+len('ddmmyyhhmm')]
+        fp_datetime = datetime.datetime.strptime(fp_datetime, "%d%m%y%H%M")
         return serial, current_closing, current_receipt, fp_datetime
 
 
