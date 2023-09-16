@@ -9,6 +9,7 @@ class Info(AbstractInfo):
 
     def get_cmd_byte_list(self):
         bytes_list = [b'<</?m', b'<</?7', b'<</?S', b'<</?d']  # Serial, closing, receipt no, datetime
+        return bytes_list
 
     @staticmethod
     def parse_response(response_list: List[str]) -> Tuple[str, int, int, datetime.datetime]:
