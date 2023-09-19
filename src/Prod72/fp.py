@@ -1,5 +1,7 @@
 import time
 from typing import Tuple, List
+
+from src.Prod72.command import Info
 from src.fp import AbstractFP, FP as StdFP
 
 
@@ -21,12 +23,13 @@ class FP(AbstractFP):
         return cks_hex.encode('ascii')
 
     def wrap_cmd(self, cmd):
-        cmd_out: bytes = self.STX + self.ADDS + bytes(len(cmd)) + self.PROT_ID + cmd + self.frame_cnt.get_cnt()
+        cmd_out: bytes = self.STX + self.ADDS + str(len(cmd)).zfill(3).encode("ascii") + self.PROT_ID + cmd + self.frame_cnt.get_cnt()
         cmd_out = cmd_out + self.get_cks(cmd_out) + self.ETX
         self.frame_cnt.tick_cnt()
         return cmd_out
 
     def unwrap_response(self, response: bytes) -> str:
+        print(response)
         return response.decode('ascii')[5:-1]
 
     def __init__(
@@ -162,12 +165,13 @@ class FP(AbstractFP):
             self.frame_counter = new_value
 
     def is_ready(self) -> bool:
-        cmd_list = IsReady().get_cmd()
+        """cmd_list = IsReady().get_cmd()
         for cmd in cmd_list:
             is_successful, response = super().send_cmd(self.wrap_cmd(cmd))
             if not IsReady.is_ready(self.unwrap_response(response)):
                 return False
-        return True
+        return True"""
+        pass
 
     def send_cmd(self, cmd: bytes) -> Tuple[bool, bytes]:
         cmd = self.wrap_cmd(cmd)
@@ -185,21 +189,13 @@ class FP(AbstractFP):
         return error, error_description
 
     def send_receipt(self, product_list: List[dict], payment_list: List[dict]):
-        cmd_list = Receipt(product_list, payment_list).get_cmd()
-        for cmd in cmd_list:
-            is_successful, response = self.send_cmd(cmd)
+        pass
 
     def send_closing(self):
-        cmd = Closing().get_cmd()
-        is_successful, response = self.send_cmd(cmd)
-        if is_successful:
-            self.current_closing += 1
-            self.current_receipt = 1
-        while not self.is_ready():
-            time.sleep(1)
+        pass
 
     def request_fp_data(self):
-        cmd_list = Info().get_cmd()
+        cmd_list = Info().get_cmd_byte_list()
         response_list = []
         for cmd in cmd_list:
             is_successful, response = self.send_cmd(cmd)
@@ -211,7 +207,7 @@ class FP(AbstractFP):
         )
 
     def send_vp(self):
-        cmd_list = Vp(
+        """cmd_list = Vp(
             fp_serial=self.response_serial,
             fp_datetime=self.fp_datetime,
             current_closing=self.current_closing,
@@ -234,4 +230,5 @@ class FP(AbstractFP):
                 while not self.is_ready():
                     time.sleep(1)
             elif isinstance(cmd, list):
-                self.send_cmd_list(cmd)
+                self.send_cmd_list(cmd)"""
+        pass

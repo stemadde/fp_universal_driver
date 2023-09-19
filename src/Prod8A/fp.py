@@ -1,4 +1,7 @@
+import time
 from typing import Tuple, List
+
+from src.Prod8A.command import Closing, Info, IsReady
 from src.Prod8A.iva import Iva
 from src.Prod8A.payment import Payment
 from src.Prod8A.header import Header
@@ -33,7 +36,11 @@ class FP(AbstractFP):
 
         super().__init__(*args, **kwargs)
         self.serial = serial  # Matricola
+        self.response_serial = ""
         self.sock = None
+
+    def unwrap_response(self, response: bytes) -> str:
+        return "/".join(response.decode("ascii").split("/")[3:-1])
 
     @property
     def max_categories_length(self) -> int:
@@ -99,3 +106,32 @@ class FP(AbstractFP):
         for plu in self.plus:
             std_fp.plus.append(plu.to_fp())
         return std_fp
+
+    def send_closing(self):
+        cmd = Closing().get_cmd()
+        is_successful, response = self.send_cmd(cmd)
+        if is_successful:
+            self.current_closing += 1
+            self.current_receipt = 1
+        while not self.is_ready():
+            time.sleep(1)
+
+    def request_fp_data(self):
+        cmd_list = Info().get_cmd_byte_list()
+        response_list = []
+        for cmd in cmd_list:
+            is_successful, response = self.send_cmd(cmd)
+            response = self.unwrap_response(response)
+            response_list.append(response)
+
+        self.response_serial, self.current_closing, self.current_receipt, self.fp_datetime = Info.parse_response(
+            response_list
+        )
+
+    def is_ready(self) -> bool:
+        cmd_list = IsReady().get_cmd()
+        for cmd in cmd_list:
+            is_successful, response = super().send_cmd(cmd)
+            if not IsReady.is_ready(self.unwrap_response(response)):
+                return False
+        return True
