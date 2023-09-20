@@ -28,6 +28,8 @@ def main():
         "value1": int(config['DEFAULT']['RECEIPT_VALUE_1']),
         "value2": int(config['DEFAULT']['RECEIPT_VALUE_2']),
         "lottery_code": config['DEFAULT']['LOTTERY_CODE'],
+        "tech_cf": config['DEFAULT']['TECH_CF'],
+        "tech_vat": config['DEFAULT']['TECH_VAT'],
     }
 
     if producer == '96':

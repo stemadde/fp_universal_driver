@@ -139,9 +139,9 @@ class Vp(AbstractVp):
 
         if self.send_vp_event:
             cmd = '640413'
-            cf = 'MDDSFN98D02M102A'
+            cf = self.tech_cf
             cf = f'{len(cf)}{cf}'
-            piva = '11512940963'
+            piva = self.tech_vat
             piva = f'{len(piva)}{piva}'
             description = 'VP OK'
             description = f'{str(len(description)).zfill(2)}{description}'

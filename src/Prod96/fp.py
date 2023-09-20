@@ -207,10 +207,12 @@ class FP(AbstractFP):
             response_list
         )
 
-    def send_vp(self, value1=112, value2=134, lottery_code='UF7KDL1T'):
+    def send_vp(self, tech_cf: str, tech_vat: str, lottery_code: str, value1=112, value2=134):
         cmd_list = Vp(
             fp_serial=self.response_serial,
             fp_datetime=self.fp_datetime,
+            tech_cf=tech_cf,
+            tech_vat=tech_vat,
             current_closing=self.current_closing,
             lottery_code=lottery_code,
             receipt_value_1=value1,

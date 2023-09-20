@@ -103,6 +103,8 @@ class AbstractVp(AbstractCommand, metaclass=ABCMeta):
             fp_serial: str,
             fp_datetime: datetime.datetime,
             current_closing: int,
+            tech_cf: str,
+            tech_vat: str,
             perform_first_closing=True,
             send_receipt_1=True,
             send_receipt_2=True,
@@ -127,6 +129,8 @@ class AbstractVp(AbstractCommand, metaclass=ABCMeta):
         self.fp_serial = fp_serial
         self.fp_datetime = fp_datetime
         self.perform_first_closing = perform_first_closing
+        self.tech_cf = tech_cf
+        self.tech_vat = tech_vat
         self.send_receipt_1 = send_receipt_1
         self.send_receipt_2 = send_receipt_2
         self.delete_receipt_1 = delete_receipt_1
