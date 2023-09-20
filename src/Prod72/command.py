@@ -4,11 +4,8 @@ from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractIn
 
 
 class Info(AbstractInfo):
-    def cmd_return_type(self):
-        return 'list'
-
     def get_cmd_byte_list(self):
-        bytes_list = [b'<</?m', b'<</?7', b'<</?S', b'<</?d']  # Serial, closing, receipt no, datetime
+        bytes_list = [b'<</?s', b'<</?m', b'<</?7', b'<</?S', b'<</?d']  # General, Serial, closing, receipt no, datetime
         return bytes_list
 
     @staticmethod

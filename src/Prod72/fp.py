@@ -29,8 +29,13 @@ class FP(AbstractFP):
         return cmd_out
 
     def unwrap_response(self, response: bytes) -> str:
-        print(response)
-        return response.decode('ascii')[5:-1]
+        pre = self.ACK + self.STX + self.ADDS
+        pre = len(pre.decode('ascii'))
+        post = self.ETX
+        post = len(post.decode('ascii'))
+        response = response.decode('ascii')
+        response = response[pre:-post]
+        return response
 
     def __init__(
             self, *args,
