@@ -82,7 +82,7 @@ class Vp(AbstractVp):
         # Start intervention
         bytes_list.append(b'64040')
 
-        if self.send_receipt_1:
+        if self.send_receipt_1:  # Counts as 4 commands
             bytes_list.append(Receipt(
                 product_list=[{
                     'rep_n': 1,
@@ -97,7 +97,7 @@ class Vp(AbstractVp):
             ).get_cmd())
         # Enable lottery
         bytes_list.append(f'3019{str(len(self.lottery_code)).zfill(2)}{self.lottery_code.upper()}'.encode('ascii'))
-        if self.send_receipt_2:
+        if self.send_receipt_2:  # Counts as 4 commands
             bytes_list.append(Receipt(
                 product_list=[{
                     'rep_n': 1,

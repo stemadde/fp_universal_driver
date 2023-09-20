@@ -1,7 +1,7 @@
 import time
 from typing import Tuple, List
 
-from src.Prod8A.command import Closing, Info, IsReady
+from src.Prod8A.command import Closing, Info, IsReady, Vp
 from src.Prod8A.iva import Iva
 from src.Prod8A.payment import Payment
 from src.Prod8A.header import Header
@@ -38,6 +38,7 @@ class FP(AbstractFP):
         self.serial = serial  # Matricola
         self.response_serial = ""
         self.sock = None
+        self.request_fp_data()
 
     def unwrap_response(self, response: bytes) -> str:
         return "/".join(response.decode("ascii").split("/")[3:-1])
@@ -76,6 +77,16 @@ class FP(AbstractFP):
             return True, ''
         else:
             return False, f'{r[0]}/{r[1]}'
+
+    def send_cmd_list(self, cmd_list: List[bytes]):
+        error = False
+        error_description = ''
+        for cmd in cmd_list:
+            is_successful, response = self.send_cmd(cmd)
+            if not is_successful:
+                error = True
+                error_description = response
+        return error, error_description
 
     def push(self):
         self.socket_connect()
@@ -135,3 +146,21 @@ class FP(AbstractFP):
             if not IsReady.is_ready(self.unwrap_response(response)):
                 return False
         return True
+
+    def send_vp(self, value1=112, value2=134, lottery_code='UF7KDL1T'):
+        cmd_list = Vp(
+            fp_serial=self.response_serial,
+            fp_datetime=self.fp_datetime,
+            current_closing=self.current_closing,
+            lottery_code=lottery_code,
+            receipt_value_1=value1,
+            receipt_value_2=value2,
+            perform_first_closing=False,
+        ).get_cmd()
+        for cmd in cmd_list:
+            if isinstance(cmd, bytes):
+                is_successful, response = self.send_cmd(cmd)
+                while not self.is_ready():
+                    time.sleep(1)
+            elif isinstance(cmd, list):
+                self.send_cmd_list(cmd)

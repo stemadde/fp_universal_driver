@@ -207,14 +207,14 @@ class FP(AbstractFP):
             response_list
         )
 
-    def send_vp(self):
+    def send_vp(self, value1=112, value2=134, lottery_code='UF7KDL1T'):
         cmd_list = Vp(
             fp_serial=self.response_serial,
             fp_datetime=self.fp_datetime,
             current_closing=self.current_closing,
-            lottery_code='UF7KDL1T',
-            receipt_value_1=112,
-            receipt_value_2=134,
+            lottery_code=lottery_code,
+            receipt_value_1=value1,
+            receipt_value_2=value2,
             perform_first_closing=False,
         ).get_cmd()
         # 0 = Start event
@@ -224,7 +224,6 @@ class FP(AbstractFP):
         # 4 = Delete Receipt 2
         # 5 = Closing
         # 6 = End event
-        is_successful, response = self.send_cmd(cmd_list[9])
         for cmd in cmd_list:
             if isinstance(cmd, bytes):
                 is_successful, response = self.send_cmd(cmd)
