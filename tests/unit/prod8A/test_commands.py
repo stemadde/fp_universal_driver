@@ -38,4 +38,4 @@ def test_vp():
     fp = get_fp_instance(
         os.getenv('FP_IP', '192.168.1.76'), int(os.getenv('FP_PORT', '9101')), os.getenv('FP_SERIAL', '8AMTN024519')
     )
-    fp.send_vp()
+    fp.send_vp(os.getenv('TECH_CF', ''), os.getenv('TECH_VAT', ''), os.getenv('LOTTERY_CODE', ''))

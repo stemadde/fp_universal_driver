@@ -147,7 +147,7 @@ class FP(AbstractFP):
                 return False
         return True
 
-    def send_vp(self, tech_cf: str, tech_vat: str, lottery_code: str, value1=112, value2=134):
+    def send_vp(self, tech_cf: str, tech_vat: str, lottery_code: str, value1=112, value2=134, perform_first_closing=True):
         cmd_list = Vp(
             fp_serial=self.response_serial,
             fp_datetime=self.fp_datetime,
@@ -157,7 +157,7 @@ class FP(AbstractFP):
             lottery_code=lottery_code,
             receipt_value_1=value1,
             receipt_value_2=value2,
-            perform_first_closing=False,
+            perform_first_closing=perform_first_closing,
         ).get_cmd()
         for cmd in cmd_list:
             if isinstance(cmd, bytes):
