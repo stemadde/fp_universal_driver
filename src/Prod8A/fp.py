@@ -1,7 +1,7 @@
 import time
 from typing import Tuple, List
 
-from src.Prod8A.command import Closing, Info, IsReady, Vp
+from src.Prod8A.command import Closing, Info, IsReady, Vp, HeadersCmd
 from src.Prod8A.iva import Iva
 from src.Prod8A.payment import Payment
 from src.Prod8A.header import Header
@@ -166,3 +166,14 @@ class FP(AbstractFP):
                     time.sleep(1)
             elif isinstance(cmd, list):
                 self.send_cmd_list(cmd)
+
+    def send_headers(self):
+        cmd = HeadersCmd().send_cmd_bytes(self.headers)
+        is_successful, response = self.send_cmd(cmd)
+        response = self.unwrap_response(response)
+
+    def get_headers(self):
+        cmd = HeadersCmd().get_cmd_bytes()
+        is_successful, response = self.send_cmd(cmd)
+        response = self.unwrap_response(response)
+        self.headers = HeadersCmd.parse_response(response)

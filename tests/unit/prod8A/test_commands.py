@@ -39,3 +39,12 @@ def test_vp():
         os.getenv('FP_IP', '192.168.1.76'), int(os.getenv('FP_PORT', '9101')), os.getenv('FP_SERIAL', '8AMTN024519')
     )
     fp.send_vp(os.getenv('TECH_CF', ''), os.getenv('TECH_VAT', ''), os.getenv('LOTTERY_CODE', ''))
+
+
+def test_headers():
+    fp = get_fp_instance(
+        os.getenv('FP_IP', '192.168.1.76'), int(os.getenv('FP_PORT', '9101')), os.getenv('FP_SERIAL', '8AMTN024519')
+    )
+    fp.get_headers()
+    fp.headers[0].description = fp.headers[0].description[::-1]
+    fp.send_headers()

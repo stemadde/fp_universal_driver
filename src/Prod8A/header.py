@@ -15,6 +15,24 @@ class Header(AbstractHeader):
     def max_description_length(self) -> int:
         return 48
 
+    def get_formatting_flag(self) -> int:
+        if self.is_bold:
+            return 4
+        elif self.is_double_width and self.is_double_height:
+            return 3
+        elif self.is_double_width:
+            return 2
+        elif self.is_double_height:
+            return 1
+        else:
+            return 0
+
+    def get_alignment_flag(self) -> int:
+        if self.is_centered:
+            return 0
+        else:
+            return 1
+
     def __validate_id__(self):
         if not 1 <= self.id <= 8:
             raise AttributeError('Id is not in range 1 - 8')

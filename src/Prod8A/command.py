@@ -1,6 +1,8 @@
 import datetime
 from typing import List, Tuple
-from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo, AbstractIsReady
+
+from src.Prod8A.header import Header
+from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo, AbstractIsReady, AbstractCommand
 
 
 class Info(AbstractInfo):
@@ -115,3 +117,41 @@ class Vp(AbstractVp):
         bytes_list.append(Closing().get_cmd())
 
         return bytes_list
+
+
+class HeadersCmd(AbstractCommand):
+
+    def get_cmd_bytes(self) -> bytes:
+        return b'O/'
+
+    def send_cmd_bytes(self, header_list: List[Header]) -> bytes:
+        return_string = "L"
+        for header in header_list:
+            return_string += f'/{header.get_formatting_flag()}/{header.description}/{header.get_alignment_flag()}'
+        return return_string.encode("ascii")
+
+    @staticmethod
+    def parse_response(response: str) -> List[Header]:
+        return_list = []
+        split = response.split("/")
+
+        for i in range(int(len(split)/2)):
+            j = i*2
+            descrizione = split[j]
+            stripped_descrizione = descrizione.lstrip()
+            formattazione = split[j+1]
+
+            header = Header(
+                header_id=i+1,
+                description=descrizione.strip(),
+                is_centered=len(descrizione) != len(stripped_descrizione),
+                is_double_height=formattazione in ["1", "3"],
+                is_double_width=formattazione in ["2", "3"],
+                is_bold=formattazione == '4',
+                is_italic=False,
+                is_underlined=False
+            )
+            return_list.append(header)
+            if i > 6:
+                break
+        return return_list
