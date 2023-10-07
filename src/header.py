@@ -14,6 +14,7 @@ class AbstractHeader(AbstractFPTable, metaclass=ABCMeta):
             is_double_width=False,
             is_bold=False,
             is_italic=False,
+            is_underlined=False,
     ):
         self.id = header_id
         self.description = description
@@ -22,6 +23,7 @@ class AbstractHeader(AbstractFPTable, metaclass=ABCMeta):
         self.is_double_width = is_double_width
         self.is_bold = is_bold
         self.is_italic = is_italic
+        self.is_underlined = is_underlined
         super().__init__()
 
     @property
