@@ -1,4 +1,5 @@
 from abc import ABCMeta
+from decimal import Decimal
 from typing import Literal, Optional
 import logging
 from .base_fp_object import AbstractFPTable
@@ -11,7 +12,7 @@ class AbstractIva(AbstractFPTable, metaclass=ABCMeta):
             self,
             iva_id: int,
             iva_type: Literal['natura', 'aliquota', 'ventilazione'],
-            aliquota_value: Optional[float],
+            aliquota_value: Optional[Decimal],
             natura_code: Optional[Literal['N1', 'N2', 'N3', 'N4', 'N5', 'N6']],
             ateco_code=0,
     ):
@@ -24,11 +25,11 @@ class AbstractIva(AbstractFPTable, metaclass=ABCMeta):
         super().__init__()
 
     @property
-    def min_aliquota_value(self) -> float:
+    def min_aliquota_value(self) -> Decimal:
         raise NotImplementedError('min_aliquota_value attribute not defined')
 
     @property
-    def max_aliquota_value(self) -> float:
+    def max_aliquota_value(self) -> Decimal:
         raise NotImplementedError('max_aliquota_value attribute not defined')
 
     def __validate_iva_type__(self):
@@ -37,7 +38,7 @@ class AbstractIva(AbstractFPTable, metaclass=ABCMeta):
 
     def __validate_aliquota__(self):
         if self.iva_type == 'aliquota':
-            if not isinstance(self.aliquota_value, float):
+            if not isinstance(self.aliquota_value, Decimal):
                 raise AttributeError(f'Invalid aliquota value type {self.aliquota_value}')
             if not self.min_aliquota_value < self.aliquota_value < self.max_aliquota_value:
                 raise AttributeError(f'Invalid aliquota value {self.aliquota_value}')
@@ -65,9 +66,9 @@ class Iva(AbstractIva):
         super().__init__(*args, **kwargs)
 
     @property
-    def min_aliquota_value(self) -> float:
-        return 0.0
+    def min_aliquota_value(self) -> Decimal:
+        return Decimal("0.00")
 
     @property
-    def max_aliquota_value(self) -> float:
-        return 100.0
+    def max_aliquota_value(self) -> Decimal:
+        return Decimal("100.00")

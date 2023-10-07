@@ -1,7 +1,7 @@
 import time
 from typing import Tuple, List
 
-from src.Prod8A.command import Closing, Info, IsReady, Vp, HeadersCmd
+from src.Prod8A.command import Closing, Info, IsReady, Vp, HeadersCmd, IvasCmd
 from src.Prod8A.iva import Iva
 from src.Prod8A.payment import Payment
 from src.Prod8A.header import Header
@@ -177,3 +177,15 @@ class FP(AbstractFP):
         is_successful, response = self.send_cmd(cmd)
         response = self.unwrap_response(response)
         self.headers = HeadersCmd.parse_response(response)
+
+    def send_ivas(self):
+        cmd = IvasCmd().send_cmd_bytes(self.ivas)
+        is_successful, response = self.send_cmd(cmd)
+        response = self.unwrap_response(response)
+        print(response)
+
+    def get_ivas(self):
+        cmd = IvasCmd().get_cmd_bytes()
+        is_successful, response = self.send_cmd(cmd)
+        response = self.unwrap_response(response)
+        self.ivas = IvasCmd.parse_response(response)

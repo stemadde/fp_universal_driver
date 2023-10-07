@@ -48,3 +48,14 @@ def test_headers():
     fp.get_headers()
     fp.headers[0].description = fp.headers[0].description[::-1]
     fp.send_headers()
+
+
+def test_ivas():
+    fp = get_fp_instance(
+        os.getenv('FP_IP', '192.168.1.76'), int(os.getenv('FP_PORT', '9101')), os.getenv('FP_SERIAL', '8AMTN024519')
+    )
+    fp.get_ivas()
+    iva = fp.ivas[0]
+    fp.ivas[0] = fp.ivas[1]
+    fp.ivas[1] = iva
+    fp.send_ivas()

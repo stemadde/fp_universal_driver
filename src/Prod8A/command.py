@@ -1,7 +1,9 @@
 import datetime
+from decimal import Decimal
 from typing import List, Tuple
 
 from src.Prod8A.header import Header
+from src.Prod8A.iva import Iva
 from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo, AbstractIsReady, AbstractCommand
 
 
@@ -155,3 +157,50 @@ class HeadersCmd(AbstractCommand):
             if i > 6:
                 break
         return return_list
+
+class IvasCmd(AbstractCommand):
+
+    def get_cmd_bytes(self) -> bytes:
+        return b'e/'
+
+    @staticmethod
+    def parse_response(response: str) -> List[Iva]:
+        return_list = []
+        split = response.split("/")
+
+        for i in range(int(len(split)/3)):
+            valore_iva = Decimal(split[i])
+            natura = split[i+12]
+            codice_ateco = int(split[i+24])
+            codice_natura = 0
+            if valore_iva:
+                iva_type = "aliquota"
+            else:
+                codice_natura = int(natura)
+                if codice_natura == 6:
+                    iva_type = "ventilazione"
+                else:
+                    iva_type = "natura"
+
+            iva = Iva(
+                iva_id=i+1,
+                iva_type=iva_type,
+                aliquota_value=valore_iva,
+                natura_code=codice_natura,
+                ateco_code=codice_ateco
+            )
+            return_list.append(iva)
+        return return_list
+
+    @staticmethod
+    def send_cmd_bytes(iva_list: List[Iva]) -> bytes:
+        return_string = "b"
+        for i in range(3):
+            for iva in iva_list:
+                if i == 0:
+                    return_string += f'/{iva.aliquota_value}'
+                elif i == 1:
+                    return_string += f'/{iva.natura_code}'
+                else:
+                    return_string += f'/{iva.ateco_code}'
+        return return_string.encode("ascii")
