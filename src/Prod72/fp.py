@@ -1,18 +1,20 @@
+import socket
 import time
 from typing import Tuple, List
 
-from src.Prod72.command import Info
-from src.fp import AbstractFP, FP as StdFP
+from src.Prod72.command import Info, Closing, Receipt
+from src.fp import AbstractFP, FP as StdFP, logger
 
 
 class FP(AbstractFP):
     STX = b"\x02"
-    ADDS = b"00"
+    ADDS = b"01"
     ETX = b"\x03"
     ACK = b"\x06"
     NACK = b"\x15"
     PROT_ID = b"N"
     IDENT = b"0"
+    MAX_WAIT = 3
 
     @staticmethod
     def get_cks(cmd: bytes) -> bytes:
@@ -29,13 +31,22 @@ class FP(AbstractFP):
         return cmd_out
 
     def unwrap_response(self, response: bytes) -> str:
+        if response == self.ACK:
+            return ""
+        response = response.decode('ascii')
         pre = self.ACK + self.STX + self.ADDS
         pre = len(pre.decode('ascii'))
-        post = self.ETX
-        post = len(post.decode('ascii'))
-        response = response.decode('ascii')
-        response = response[pre:-post]
+        data_len = int(response[pre:pre+3])
+        response = response[pre+3+len(self.PROT_ID):pre+3+len(self.PROT_ID)+data_len]
         return response
+
+    def check_error(self, is_successful: bool, response: str) -> Tuple[bool, str]:
+        if response.startswith("E"):
+            is_successful = False
+            response = response[2:]
+        else:
+            response = response[1:]
+        return is_successful, response
 
     def __init__(
             self, *args,
@@ -179,8 +190,42 @@ class FP(AbstractFP):
         pass
 
     def send_cmd(self, cmd: bytes) -> Tuple[bool, bytes]:
+        def inner_send_cmd(cmd):
+            try:
+                self.socket_connect()
+                assert isinstance(self.sock, socket.socket)
+                for i in range(self.MAX_TRIES):
+                    self.sock.sendall(cmd)
+                    self.sock.settimeout(30.0)
+                    time.sleep(0.180)
+                    # Get the response
+                    response = b''
+                    timer = 0
+                    while True:
+                        response += self.sock.recv(1024)
+                        if self.ETX in response:
+                            break
+                        time.sleep(0.200)
+                        timer += 0.200
+                        if timer > self.MAX_WAIT:
+                            logger.warning(f"Error while sending command to printer: no ETX")
+                            return False, response
+                    has_succeeded, error = self.check_response(response)
+                    if has_succeeded:
+                        return True, response
+                    else:
+                        logger.warning(f"Error while sending command to printer: {error}")
+                        time.sleep(self.TRY_DELAY)  # Wait half a second to allow printer buffer to empy
+                return False, 'Numero massimo di tentativi raggiunto'.encode()
+            except socket.timeout as e:
+                logger.error(str(e))
+                return False, str(e).encode()
+            except BaseException as e:
+                logger.error(str(e))
+                return False, str(e).encode()
+
         cmd = self.wrap_cmd(cmd)
-        is_successful, response = super().send_cmd(cmd)
+        is_successful, response = inner_send_cmd(cmd)
         return is_successful, response
 
     def send_cmd_list(self, cmd_list: List[bytes]):
@@ -194,10 +239,19 @@ class FP(AbstractFP):
         return error, error_description
 
     def send_receipt(self, product_list: List[dict], payment_list: List[dict]):
-        pass
+        cmd_list = Receipt(product_list, payment_list).get_cmd()
+        for cmd in cmd_list:
+            is_successful, response = self.send_cmd(cmd)
 
     def send_closing(self):
-        pass
+        cmd_list = Closing().get_cmd_byte_list()
+        response_list = []
+        for cmd in cmd_list:
+            is_successful, response = self.send_cmd(cmd)
+            response = self.unwrap_response(response)
+            is_successful, response = self.check_error(is_successful, response)
+            response_list.append(response)
+        return response_list
 
     def request_fp_data(self):
         cmd_list = Info().get_cmd_byte_list()
@@ -205,6 +259,7 @@ class FP(AbstractFP):
         for cmd in cmd_list:
             is_successful, response = self.send_cmd(cmd)
             response = self.unwrap_response(response)
+            is_successful, response = self.check_error(is_successful, response)
             response_list.append(response)
 
         self.response_serial, self.current_closing, self.current_receipt, self.fp_datetime = Info.parse_response(
