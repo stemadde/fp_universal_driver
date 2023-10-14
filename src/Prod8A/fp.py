@@ -1,7 +1,7 @@
 import time
 from typing import Tuple, List
 
-from src.Prod8A.command import Closing, Info, IsReady, Vp, HeadersCmd, IvasCmd
+from src.Prod8A.command import Closing, Info, IsReady, Vp, HeadersCmd, IvasCmd, CategoryCmd
 from src.Prod8A.iva import Iva
 from src.Prod8A.payment import Payment
 from src.Prod8A.header import Header
@@ -45,7 +45,7 @@ class FP(AbstractFP):
 
     @property
     def max_categories_length(self) -> int:
-        return 99
+        return 60
 
     @property
     def max_headers_length(self) -> int:
@@ -78,15 +78,19 @@ class FP(AbstractFP):
         else:
             return False, f'{r[0]}/{r[1]}'
 
-    def send_cmd_list(self, cmd_list: List[bytes]):
+    def send_cmd_list(self, cmd_list: List[bytes]) -> Tuple[bool, str, List[str]]:
         error = False
         error_description = ''
+        response_list = []
         for cmd in cmd_list:
             is_successful, response = self.send_cmd(cmd)
             if not is_successful:
                 error = True
                 error_description = response
-        return error, error_description
+                response_list.append(response)
+            else:
+                response_list.append(self.unwrap_response(response))
+        return error, error_description, response_list
 
     def push(self):
         self.socket_connect()
@@ -182,10 +186,19 @@ class FP(AbstractFP):
         cmd = IvasCmd().send_cmd_bytes(self.ivas)
         is_successful, response = self.send_cmd(cmd)
         response = self.unwrap_response(response)
-        print(response)
 
     def get_ivas(self):
         cmd = IvasCmd().get_cmd_bytes()
         is_successful, response = self.send_cmd(cmd)
         response = self.unwrap_response(response)
         self.ivas = IvasCmd.parse_response(response)
+
+    def send_category(self):
+        cmd_list = CategoryCmd().send_cmd_bytes_list(self.categories)
+        is_error, error, response_list = self.send_cmd_list(cmd_list)
+        print()
+
+    def get_category(self):
+        cmd = CategoryCmd().get_cmd_bytes_list(self.max_categories_length)
+        is_error, error, response_list = self.send_cmd_list(cmd)
+        self.categories = CategoryCmd.parse_response(response_list)

@@ -2,6 +2,7 @@ import datetime
 from decimal import Decimal
 from typing import List, Tuple
 
+from src.Prod8A.category import Category
 from src.Prod8A.header import Header
 from src.Prod8A.iva import Iva
 from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo, AbstractIsReady, AbstractCommand
@@ -204,3 +205,57 @@ class IvasCmd(AbstractCommand):
                 else:
                     return_string += f'/{iva.ateco_code}'
         return return_string.encode("ascii")
+
+
+class CategoryCmd(AbstractCommand):
+
+    def get_cmd_bytes_list(self, max_categories_length) -> List[bytes]:
+        list_category = []
+        for i in range(max_categories_length):
+            list_category.append(f":/{i+1}/".encode("ascii"))
+        return list_category
+
+    @staticmethod
+    def parse_response(response_list: List[str]) ->List[Category]:
+        return_list = []
+        for i, category in enumerate(response_list):
+            split = category.split("/")
+            description = split[0]
+            iva = split[1]
+            category_id = i+1
+            default_price = Decimal(split[3])
+            max_price = Decimal(split[4])
+            flags = split[6]
+            is_active = bool(int(flags[0]))
+            free_price = bool(int(flags[1]))
+            category_type = "beni" if flags[7] == "0" else "servizi"
+
+            category = Category(
+                category_id=category_id,
+                description=description,
+                default_price=default_price,
+                iva_id=iva,
+                max_price=max_price,
+                is_active=is_active,
+                free_price=free_price,
+                category_type=category_type,
+            )
+            return_list.append(category)
+        return return_list
+
+    @staticmethod
+    def send_cmd_bytes_list(category_list: List[Category]) -> List[bytes]:
+        return_list = []
+        for category in category_list:
+            return_string = "N"
+            return_string += f'/{category.id}'
+            return_string += f'/{category.description}'
+            return_string += f'/{category.iva_id}'
+            return_string += f'/1'
+            return_string += f'/{category.default_price}'
+            return_string += f'/{category.max_price}'
+            return_string += f'/0.00'
+            return_string += f'/{category.get_flags()}'
+            return_string += '//'
+            return_list.append(return_string.encode("ascii"))
+        return return_list

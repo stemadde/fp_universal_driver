@@ -23,3 +23,12 @@ class Category(AbstractCategory):
 
     def from_fp(self, category: 'Category'):
         pass
+
+    def get_flags(self):
+        def b(value):
+            return 1 if value else 0
+
+        def s(string):
+            return 0 if string == "beni" else 1
+
+        return f'{b(self.is_active)}{b(self.free_price)}00000{s(self.category_type)}0'

@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import Optional, Literal
 import logging
+from decimal import Decimal
 from .base_fp_object import AbstractFPTable
 from abc import ABCMeta
 
@@ -11,10 +12,13 @@ class AbstractCategory(AbstractFPTable, metaclass=ABCMeta):
             self,
             category_id: int,
             description: str,
-            default_price: Optional[float],
+            default_price: Optional[Decimal],
             iva_id: int,
-            max_price=999999999.99,
-            min_price=0.0,
+            max_price=Decimal("999999999.99"),
+            min_price=Decimal("0.00"),
+            is_active=True,
+            free_price=True,
+            category_type: Literal["beni", "servizi"] = "beni",
     ):
         self.id = category_id
         self.description = description
@@ -22,6 +26,9 @@ class AbstractCategory(AbstractFPTable, metaclass=ABCMeta):
         self.max_price = max_price
         self.min_price = min_price
         self.iva_id = iva_id
+        self.is_active = is_active
+        self.free_price = free_price
+        self.category_type = category_type
         super().__init__()
 
     @property
@@ -34,6 +41,14 @@ class AbstractCategory(AbstractFPTable, metaclass=ABCMeta):
     def __validate_max_description_length__(self):
         if len(self.description) > self.max_description_length:
             raise AttributeError(f'Description max length exceeded ({self.max_description_length})')
+
+    def __validate_price__(self):
+        if self.default_price > 0:
+            if not (self.min_price < self.default_price < self.max_price):
+                raise AttributeError('Default price must be between min_price and max_price')
+        else:
+            if not self.free_price:
+                raise AttributeError('Default price must be set to disable free price')
 
     def __setattr__(self, key, value):
         super().__setattr__(key, value)

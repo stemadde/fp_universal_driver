@@ -59,3 +59,13 @@ def test_ivas():
     fp.ivas[0] = fp.ivas[1]
     fp.ivas[1] = iva
     fp.send_ivas()
+
+def test_categories():
+    fp = get_fp_instance(
+        os.getenv('FP_IP', '192.168.1.76'), int(os.getenv('FP_PORT', '9101')), os.getenv('FP_SERIAL', '8AMTN024519')
+    )
+    fp.get_category()
+    category_id = fp.categories[0].id
+    fp.categories[0].id = fp.categories[1].id
+    fp.categories[1].id = category_id
+    fp.send_category()
