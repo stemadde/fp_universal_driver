@@ -12,14 +12,21 @@ class AbstractPos(AbstractFPTable, metaclass=ABCMeta):
             pos_id: int,
             description: str,
             ip: str,
-            port: int,
-            protocol: Literal['ingenico', 'other'],
+            port: int = 9100,
+            protocol: Literal['ingenico', 'other'] = 'ingenico',
+            terminal_id: str = '00000000',
+            rt_id: str = '00000000',
+            ingenico_protocol: int = 17,
+
     ):
         self.id = pos_id
         self.description = description
         self.ip = ip
         self.port = port
         self.protocol = protocol
+        self.terminal_id = terminal_id
+        self.rt_id = rt_id
+        self.ingenico_protocol = ingenico_protocol
         super().__init__()
 
     @property
