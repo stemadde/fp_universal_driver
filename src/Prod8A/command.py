@@ -5,6 +5,7 @@ from typing import List, Tuple
 from src.Prod8A.category import Category
 from src.Prod8A.header import Header
 from src.Prod8A.iva import Iva
+from src.Prod8A.pos import Pos
 from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo, AbstractIsReady, AbstractCommand
 
 
@@ -209,7 +210,7 @@ class IvasCmd(AbstractCommand):
 
 class CategoryCmd(AbstractCommand):
 
-    def get_cmd_bytes_list(self, max_categories_length) -> List[bytes]:
+    def get_cmd_byte_list(self, max_categories_length: int) -> List[bytes]:
         list_category = []
         for i in range(max_categories_length):
             list_category.append(f":/{i+1}/".encode("ascii"))
@@ -244,7 +245,7 @@ class CategoryCmd(AbstractCommand):
         return return_list
 
     @staticmethod
-    def send_cmd_bytes_list(category_list: List[Category]) -> List[bytes]:
+    def send_cmd_byte_list(category_list: List[Category]) -> List[bytes]:
         return_list = []
         for category in category_list:
             return_string = "N"
@@ -258,4 +259,35 @@ class CategoryCmd(AbstractCommand):
             return_string += f'/{category.get_flags()}'
             return_string += '//'
             return_list.append(return_string.encode("ascii"))
+        return return_list
+
+class PosCmd(AbstractCommand):
+
+    def get_cmd_byte_list(self, max_poses_length: int) -> List[bytes]:
+        list_poses = []
+        for i in range(max_poses_length):
+            list_poses.append(f'p/{i+1}'.encode("ascii"))
+        return list_poses
+
+    @staticmethod
+    def parse_response(response_list: List[str]) -> List[Pos]:
+        return_list = []
+        for i, pos in enumerate(response_list):
+            split = pos.split("/")
+            description = split[0]
+            indirizzo_ip = split[1]
+            pos_id = i+1
+            porta_tcp = int(split[2])
+            id_terminale = split[3]
+            id_cassa = split[4]
+
+            pos = Pos(
+                pos_id=pos_id,
+                description=description,
+                ip=indirizzo_ip,
+                port=porta_tcp,
+                terminal_id=id_terminale,
+                rt_id=id_cassa
+            )
+            return_list.append(pos)
         return return_list

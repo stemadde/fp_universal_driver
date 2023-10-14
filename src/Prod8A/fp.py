@@ -1,7 +1,7 @@
 import time
 from typing import Tuple, List
 
-from src.Prod8A.command import Closing, Info, IsReady, Vp, HeadersCmd, IvasCmd, CategoryCmd
+from src.Prod8A.command import Closing, Info, IsReady, Vp, HeadersCmd, IvasCmd, CategoryCmd, PosCmd
 from src.Prod8A.iva import Iva
 from src.Prod8A.payment import Payment
 from src.Prod8A.header import Header
@@ -65,7 +65,7 @@ class FP(AbstractFP):
 
     @property
     def max_poses_length(self) -> int:
-        return 99
+        return 3
 
     def pull(self):
         self.socket_connect()
@@ -194,11 +194,21 @@ class FP(AbstractFP):
         self.ivas = IvasCmd.parse_response(response)
 
     def send_category(self):
-        cmd_list = CategoryCmd().send_cmd_bytes_list(self.categories)
+        cmd_list = CategoryCmd().send_cmd_byte_list(self.categories)
         is_error, error, response_list = self.send_cmd_list(cmd_list)
         print()
 
     def get_category(self):
-        cmd = CategoryCmd().get_cmd_bytes_list(self.max_categories_length)
+        cmd = CategoryCmd().get_cmd_byte_list(self.max_categories_length)
         is_error, error, response_list = self.send_cmd_list(cmd)
         self.categories = CategoryCmd.parse_response(response_list)
+
+    def send_pos(self):
+        cmd_list = PosCmd().send_cmd_byte_list(self.poses)
+        is_error, error, response_list = self.send_cmd_list(cmd_list)
+
+    def get_pos(self):
+        cmd_list = PosCmd().get_cmd_byte_list(self.max_poses_length)
+        is_error, error, response_list = self.send_cmd_list(cmd_list)
+        self.poses = PosCmd.parse_response(response_list)
+        print()

@@ -69,3 +69,13 @@ def test_categories():
     fp.categories[0].id = fp.categories[1].id
     fp.categories[1].id = category_id
     fp.send_category()
+
+def test_poses():
+    fp = get_fp_instance(
+        os.getenv('FP_IP', '192.168.1.76'), int(os.getenv('FP_PORT', '9101')), os.getenv('FP_SERIAL', '8AMTN024519')
+    )
+    fp.get_pos()
+    pos_id = fp.poses[0].id
+    fp.poses[0].id = fp.poses[1].id
+    fp.poses[1].id = pos_id
+    #fp.send_pos()

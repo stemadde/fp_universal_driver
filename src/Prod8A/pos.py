@@ -1,5 +1,4 @@
 from typing import List
-from src.Prod8A.fp import FP
 from src.pos import AbstractPos
 
 
@@ -18,9 +17,9 @@ class Pos(AbstractPos):
         pass
 
     @staticmethod
-    def push(fp: FP, objects: List['Pos']):
+    def push(fp, objects: List['Pos']):
         pass
 
     @staticmethod
-    def pull(fp: FP) -> List['Pos']:
+    def pull(fp) -> List['Pos']:
         pass
