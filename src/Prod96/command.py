@@ -91,7 +91,7 @@ class Vp(AbstractVp):
                     'iva_id': 1,
                 }],
                 payment_list=[{
-                    'payment_id': 1,  # Contanti
+                    'payment_id': 3,  # Bonifico
                     'amount_paid': self.receipt_value_1,
                 }],
             ).get_cmd())
