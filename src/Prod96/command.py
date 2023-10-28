@@ -226,6 +226,7 @@ class HeadersCmd(AbstractCommand):
             riga = riga[5:]
             flag = riga[0]
             lunghezza = riga[1:3]
+            #lunghezza non serve
             descrizione = riga[3:]
 
             header = Header(
