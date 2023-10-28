@@ -297,3 +297,18 @@ class PosCmd(AbstractCommand):
             )
             return_list.append(pos)
         return return_list
+
+    @staticmethod
+    def send_cmd_byte_list(pos_list: List[Pos]) -> List[bytes]:
+        return_list = []
+        for pos in pos_list:
+            return_string = "P"
+            return_string += f'/{pos.id}'
+            return_string += f'/{pos.description}'
+            return_string += f'/{pos.ip}'
+            return_string += f'/{pos.port}'
+            return_string += f'/{pos.terminal_id}'
+            return_string += f'/{pos.rt_id}'
+            return_string += f'/20'
+            return_list.append(return_string.encode("ascii"))
+        return return_list

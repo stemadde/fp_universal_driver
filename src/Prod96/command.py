@@ -78,6 +78,7 @@ class Vp(AbstractVp):
         bytes_list = []
         if self.perform_first_closing:
             bytes_list.append(Closing().get_cmd())
+            self.current_closing += 1
 
         # Start intervention
         bytes_list.append(b'64040')
@@ -134,8 +135,10 @@ class Vp(AbstractVp):
                        )
                 bytes_list.append(cmd.encode('ascii'))
 
-        if self.perform_second_closing:
-            bytes_list.append(Closing().get_cmd())
+        bytes_list.append(Closing().get_cmd())
+        self.current_closing += 1
+        bytes_list.append(f'5001{str(self.current_closing-1).zfill(4)}{str(self.current_closing-1).zfill(4)}'.encode('ascii'))
+        bytes_list.append(f'8003{str(self.current_closing-1).zfill(4)}{str(self.current_closing-1).zfill(4)}0'.encode('ascii'))
 
         if self.send_vp_event:
             cmd = '640413'

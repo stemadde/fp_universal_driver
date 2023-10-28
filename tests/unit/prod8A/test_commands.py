@@ -78,4 +78,4 @@ def test_poses():
     pos_id = fp.poses[0].id
     fp.poses[0].id = fp.poses[1].id
     fp.poses[1].id = pos_id
-    #fp.send_pos()
+    fp.send_pos()

@@ -211,4 +211,3 @@ class FP(AbstractFP):
         cmd_list = PosCmd().get_cmd_byte_list(self.max_poses_length)
         is_error, error, response_list = self.send_cmd_list(cmd_list)
         self.poses = PosCmd.parse_response(response_list)
-        print()
