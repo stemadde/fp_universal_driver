@@ -96,3 +96,20 @@ def test_info():
     )
     print('\n\n')
     fp.request_fp_data()
+
+def test_categories():
+    fp = get_fp_instance(
+        os.getenv('FP_IP', '192.168.1.69'), int(os.getenv('FP_PORT', '9100')), os.getenv('FP_SERIAL', 'STMTE770910')
+    )
+    fp.get_category()
+    category_id = fp.categories[0].id
+    fp.categories[0].id = fp.categories[1].id
+    fp.categories[1].id = category_id
+    #fp.send_category()
+
+def test_headers():
+    fp = get_fp_instance(
+        os.getenv('FP_IP', '192.168.1.69'), int(os.getenv('FP_PORT', '9100')), os.getenv('FP_SERIAL', 'STMTE770910')
+    )
+    fp.get_headers()
+    #fp.send_category()

@@ -1,6 +1,9 @@
 import datetime
 from typing import List, Tuple
-from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo, AbstractIsReady
+
+from src.Prod96.category import Category
+from src.Prod96.header import Header
+from src.command import AbstractClosing, AbstractReceipt, AbstractVp, AbstractInfo, AbstractIsReady, AbstractCommand
 
 
 class Info(AbstractInfo):
@@ -151,3 +154,91 @@ class Vp(AbstractVp):
             bytes_list.append(f'{cmd}{cf}{piva}{description}'.encode('ascii'))
 
         return bytes_list
+
+class CategoryCmd(AbstractCommand):
+    def get_cmd_byte(self) -> bytes:
+        return b'2103'
+
+    @staticmethod
+    def parse_response(response_list: List[str]) ->List[Category]:
+        return_list = []
+        for i, category in enumerate(response_list):
+            description = split[0]
+            iva = split[1]
+            category_id = i+1
+            default_price = Decimal(split[3])
+            max_price = Decimal(split[4])
+            flags = split[6]
+            is_active = bool(int(flags[0]))
+            free_price = bool(int(flags[1]))
+            category_type = "beni" if flags[7] == "0" else "servizi"
+
+            category = Category(
+                category_id=category_id,
+                description=description,
+                default_price=default_price,
+                iva_id=iva,
+                max_price=max_price,
+                is_active=is_active,
+                free_price=free_price,
+                category_type=category_type,
+            )
+            return_list.append(category)
+        return return_list
+
+    @staticmethod
+    def send_cmd_byte_list(category_list: List[Category]) -> List[bytes]:
+        return_list = []
+        for category in category_list:
+            return_string = "N"
+            return_string += f'/{category.id}'
+            return_string += f'/{category.description}'
+            return_string += f'/{category.iva_id}'
+            return_string += f'/1'
+            return_string += f'/{category.default_price}'
+            return_string += f'/{category.max_price}'
+            return_string += f'/0.00'
+            return_string += f'/{category.get_flags()}'
+            return_string += '//'
+            return_list.append(return_string.encode("ascii"))
+        return return_list
+
+
+class HeadersCmd(AbstractCommand):
+
+    def get_cmd_bytes_list(self, max_headers_length: int) -> List[bytes]:
+        list_header = []
+        for i in range(max_headers_length):
+            list_header.append(f"1002{i+1}".encode("ascii"))
+        return list_header
+
+    def send_cmd_bytes(self, header_list: List[Header]) -> bytes:
+        return_string = "L"
+        for header in header_list:
+            return_string += f'/{header.get_formatting_flag()}/{header.description}/{header.get_alignment_flag()}'
+        return return_string.encode("ascii")
+
+    @staticmethod
+    def parse_response(response: List[str]) -> List[Header]:
+        return_list = []
+
+        for i, riga in enumerate(response):
+            riga = riga[5:]
+            flag = riga[0]
+            lunghezza = riga[1:3]
+            descrizione = riga[3:]
+
+            header = Header(
+                header_id=i+1,
+                description=descrizione.strip(),
+                is_centered=True,
+                is_double_height=flag == '4',
+                is_double_width=flag == '5',
+                is_bold=flag == '2',
+                is_italic=flag == '6',
+                is_underlined=False
+            )
+            return_list.append(header)
+            if i > 6:
+                break
+        return return_list

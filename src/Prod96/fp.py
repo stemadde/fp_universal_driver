@@ -1,7 +1,7 @@
 import time
 from typing import Tuple, List
 from src.fp import AbstractFP, FP as StdFP
-from src.Prod96.command import Receipt, Info, Closing, IsReady, Vp
+from src.Prod96.command import Receipt, Info, Closing, IsReady, Vp, CategoryCmd, HeadersCmd
 
 
 class FP(AbstractFP):
@@ -23,7 +23,7 @@ class FP(AbstractFP):
         return cmd_out
 
     def unwrap_response(self, response: bytes) -> str:
-        return response.decode('ascii')[5:-1]
+        return response.decode('ascii')[5:-3]
 
     def __init__(
             self, *args,
@@ -61,7 +61,7 @@ class FP(AbstractFP):
 
     @property
     def max_headers_length(self) -> int:
-        return 9
+        return 6
 
     @property
     def max_ivas_length(self) -> int:
@@ -171,14 +171,16 @@ class FP(AbstractFP):
         return is_successful, response
 
     def send_cmd_list(self, cmd_list: List[bytes]):
+        response_list = []
         error = False
         error_description = ''
         for cmd in cmd_list:
             is_successful, response = self.send_cmd(cmd)
+            response_list.append(self.unwrap_response(response))
             if not is_successful:
                 error = True
                 error_description = response
-        return error, error_description
+        return error, error_description, response_list
 
 
     def send_receipt(self, product_list: List[dict], payment_list: List[dict]):
@@ -233,3 +235,23 @@ class FP(AbstractFP):
                     time.sleep(1)
             elif isinstance(cmd, list):
                 self.send_cmd_list(cmd)
+
+    def send_headers(self):
+        cmd = HeadersCmd().send_cmd_bytes(self.headers)
+        is_successful, response = self.send_cmd(cmd)
+        response = self.unwrap_response(response)
+
+    def get_headers(self):
+        cmd = HeadersCmd().get_cmd_bytes_list(self.max_headers_length)
+        is_error, error_description, response = self.send_cmd_list(cmd)
+        self.headers = HeadersCmd.parse_response(response)
+
+    def send_category(self):
+        cmd_list = CategoryCmd().send_cmd_byte_list(self.categories)
+        is_error, error, response_list = self.send_cmd_list(cmd_list)
+        print()
+
+    def get_category(self):
+        cmd = CategoryCmd().get_cmd_byte()
+        is_success, response = self.send_cmd(cmd)
+        self.categories = CategoryCmd.parse_response(response)
