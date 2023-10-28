@@ -119,6 +119,10 @@ class Vp(AbstractVp):
         if self.send_receipt_2:  # Void second receipt
             bytes_list.append(f'+/1/{self.fp_datetime.strftime("%d%m%y")}/{self.current_closing}/2////'.encode('ascii'))
         bytes_list.append(Closing().get_cmd())
+        #mpdr print
+        bytes_list.append(f'k/{self.fp_datetime.strftime("%d%m%y")}/{self.fp_datetime.strftime("%d%m%y")}/0'.encode("ascii"))
+        #print SD report
+        bytes_list.append(f'@/2/{self.current_closing}/{self.current_closing}/1/4///1')
 
         return bytes_list
 
