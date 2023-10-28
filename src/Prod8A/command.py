@@ -83,6 +83,7 @@ class Vp(AbstractVp):
         bytes_list = []
         if self.perform_first_closing:
             bytes_list.append(Closing().get_cmd())
+            self.current_closing += 1
 
         if self.send_receipt_1:  # Counts as 4 commands
             bytes_list.append(Receipt(
@@ -119,10 +120,11 @@ class Vp(AbstractVp):
         if self.send_receipt_2:  # Void second receipt
             bytes_list.append(f'+/1/{self.fp_datetime.strftime("%d%m%y")}/{self.current_closing}/2////'.encode('ascii'))
         bytes_list.append(Closing().get_cmd())
+        self.current_closing += 1
         #mpdr print
         bytes_list.append(f'k/{self.fp_datetime.strftime("%d%m%y")}/{self.fp_datetime.strftime("%d%m%y")}/0'.encode("ascii"))
         #print SD report
-        bytes_list.append(f'@/2/{self.current_closing}/{self.current_closing}/1/4///1')
+        bytes_list.append(f'@/2/{self.current_closing-1}/{self.current_closing-1}/1/4///1'.encode('ascii'))
 
         return bytes_list
 
