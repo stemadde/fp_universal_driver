@@ -162,6 +162,8 @@ class CategoryCmd(AbstractCommand):
     @staticmethod
     def parse_response(response_list: List[str]) ->List[Category]:
         return_list = []
+        """
+        
         for i, category in enumerate(response_list):
             description = split[0]
             iva = split[1]
@@ -184,6 +186,7 @@ class CategoryCmd(AbstractCommand):
                 category_type=category_type,
             )
             return_list.append(category)
+        """
         return return_list
 
     @staticmethod

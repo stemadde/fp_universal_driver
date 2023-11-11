@@ -3,3 +3,5 @@ setuptools
 twine
 requests
 pytest
+fastapi
+uvicorn[standard]

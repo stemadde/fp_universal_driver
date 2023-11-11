@@ -1,7 +1,7 @@
 import time
 from typing import Tuple, List
 
-from src.Prod8A.command import Closing, Info, IsReady, Vp, HeadersCmd, IvasCmd, CategoryCmd, PosCmd
+from src.Prod8A.command import Closing, Info, IsReady, Vp, HeadersCmd, IvasCmd, CategoryCmd, PosCmd, Receipt
 from src.Prod8A.iva import Iva
 from src.Prod8A.payment import Payment
 from src.Prod8A.header import Header
@@ -130,6 +130,11 @@ class FP(AbstractFP):
             self.current_receipt = 1
         while not self.is_ready():
             time.sleep(1)
+
+    def send_receipt(self, product_list: List[dict], payment_list: List[dict]):
+        cmd_list = Receipt(product_list, payment_list).get_cmd()
+        for cmd in cmd_list:
+            is_successful, response = self.send_cmd(cmd)
 
     def request_fp_data(self):
         cmd_list = Info().get_cmd_byte_list()

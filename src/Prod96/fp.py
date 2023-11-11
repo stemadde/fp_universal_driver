@@ -10,6 +10,17 @@ class FP(AbstractFP):
     ACK = b"\x06"
     IDENT = b"0"
 
+    def serialize(self):
+        return {
+            "serial": self.serial,
+            "port": self.port,
+            "ip": self.ip,
+            "protocol": self.protocol,
+            "current_closing": self.current_closing,
+            "current_receipt": self.current_receipt,
+            "fp_datetime": self.fp_datetime.strftime("%d/%m/%Y %H:%M:%S") if self.fp_datetime else None
+        }
+
     @staticmethod
     def get_cks(string: bytes) -> bytes:
         total = sum(string)
