@@ -1,0 +1,57 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: fp_universal_driver - AWS Lambda function to interact with Italian Fiscal Printers (RT)
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 1024
+
+Resources:
+  test:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.10
+      CodeUri: function/
+      Description: Call the base test function
+      # Function's execution role
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
+      Tracing: Active
+      Layers:
+        - !Ref libs
+      Events:
+        InfoPostApi:
+          Type: Api
+          Properties:
+            Path: /info
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  info:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      CodeUri: function/
+      Handler: endpoints.info.lambda_handler
+      Runtime: python3.10
+      Events:
+        InfoPostAPI:
+          Type: Api
+          Properties:
+            Path: '/info'
+            Method: POST
+            Auth:
+              Authorizer: NONE
+
+  libs:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: fp_universal_driver-python-lib
+      Description: Dependencies for the fp_universal_driver app.
+      ContentUri: package/.
+      CompatibleRuntimes:
+        - python3.10

@@ -5,3 +5,6 @@ requests
 pytest
 fastapi
 uvicorn[standard]
+jsonpickle
+boto3
+aws_xray_sdk
